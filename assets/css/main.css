@@ -48,8 +48,6 @@
   --glass-strong: rgba(7, 9, 13, 0.72);
   --glass-soft:   rgba(11, 17, 28, 0.4);
   --hover-wash:   rgba(203, 208, 218, 0.05);
-  --ring-line:    rgba(244, 245, 247, 0.6);
-  --ring-fill:    rgba(244, 245, 247, 0.08);
   --shadow-md:    0 20px 50px rgba(0, 0, 0, 0.4);
   --shadow-lg:    0 40px 90px rgba(0, 0, 0, 0.5);
   --shadow-xl:    0 60px 140px rgba(0, 0, 0, 0.6);
@@ -67,9 +65,9 @@
   --z-toast: 600;
 }
 
-/* ---------- Light palette — shared by "Daylight" and "Reading" ----------
-   Warm chambers-paper ground, deep ink type. Daylight keeps the WebGL stage
-   running against it; reading mode stands the stage down for a calm, fast read. */
+/* ---------- Light palette — "Daylight" ----------
+   Warm chambers-paper ground, deep ink type, with the WebGL stage running
+   against it. */
 html[data-theme="light"] {
   --paper:      #f3f0e9;   /* the page ground, readable from inside a dark island */
   --ink:        #f3f0e9;
@@ -93,8 +91,6 @@ html[data-theme="light"] {
   --glass-strong: rgba(248, 246, 240, 0.86);
   --glass-soft:   rgba(255, 255, 255, 0.6);
   --hover-wash:   rgba(26, 33, 48, 0.04);
-  --ring-line:    rgba(20, 26, 38, 0.5);
-  --ring-fill:    rgba(20, 26, 38, 0.06);
   --shadow-md:    0 18px 40px rgba(38, 42, 55, 0.1);
   --shadow-lg:    0 34px 70px rgba(38, 42, 55, 0.14);
   --shadow-xl:    0 50px 110px rgba(38, 42, 55, 0.18);
@@ -128,9 +124,6 @@ html[data-theme="light"] .footer {
   color: var(--platinum);
 }
 
-/* Reading mode alone stands the GPU stage down. */
-html[data-mode="reading"] .stage,
-html[data-mode="reading"] .stage-fallback { opacity: 0 !important; }
 html[data-theme="light"] body {
   background:
     radial-gradient(900px 600px at 78% 6%, rgba(196, 178, 140, 0.22), transparent 62%),
@@ -166,7 +159,7 @@ html[data-theme="light"] .jscales__shaft {
 }
 
 /* ---------- Daylight mode ----------
-   Same paper palette as reading mode, but the stage stays live. The ground is
+   The paper palette above, with the stage live. The ground is
    pulled a shade cleaner and the wash is thinned so the shield keeps its
    contrast instead of sitting in a warm haze. */
 html[data-mode="daylight"] body {
@@ -307,12 +300,136 @@ body.no-webgl .stage-fallback { opacity: 1; }
   transition: opacity 1s var(--ease), visibility 1s;
 }
 .intro.is-done { opacity: 0; visibility: hidden; pointer-events: none; }
-/* The light modes skip the intro (see main.js). Hiding it here too means it
-   never paints at all — the mode is set in <head> before the body renders, so
-   there is no black frame while the deferred scripts are still loading. */
-html[data-theme="light"] .intro { display: none; }
-html[data-theme="light"] body.intro-lock { overflow: auto; height: auto; }
+/* Already played this tab — decided in <head>, so it never paints at all. */
+html.intro-seen .intro { display: none; }
 body.intro-lock { overflow: hidden; height: 100vh; }
+
+/* Two entrances share the overlay; data-intro (set in <head>, confirmed by
+   main.js) shows only the parts of the one that is playing. */
+html[data-intro="seal"] .intro { background: transparent; }
+html[data-intro="seal"] .intro__canvas,
+html[data-intro="seal"] .intro__vignette,
+html[data-intro="seal"] .intro__shock,
+html[data-intro="seal"] .intro__brand,
+html:not([data-intro="seal"]) .intro__film { display: none; }
+
+/* ---------- The seal ----------
+   Painted from the theme tokens, so the same sequence is ink and brass on
+   paper in daylight, platinum and champagne on midnight. */
+.intro {
+  --intro-halo: rgba(217, 201, 172, 0.2);
+  --intro-edge: rgba(0, 0, 0, 0.55);
+  --seal: min(62vmin, 430px);
+}
+html[data-theme="light"] .intro {
+  --intro-halo: rgba(176, 138, 74, 0.2);
+  --intro-edge: rgba(92, 70, 36, 0.13);
+}
+.intro__film { position: absolute; inset: 0; z-index: 1; overflow: hidden; }
+
+/* The ground is two doors that meet at the centre line, each carrying its half
+   of one vignette, so the page is revealed by them parting. */
+.intro__door { position: absolute; top: 0; bottom: 0; width: 50.5%; }
+.intro__door--l {
+  left: 0;
+  background: radial-gradient(120% 95% at 100% 50%, transparent 45%, var(--intro-edge)), var(--ink);
+}
+.intro__door--r {
+  right: 0;
+  background: radial-gradient(120% 95% at 0% 50%, transparent 45%, var(--intro-edge)), var(--ink);
+}
+
+/* Everything drawn is hidden until the script has set each piece's start pose. */
+.intro__stage { position: absolute; inset: 0; visibility: hidden; }
+
+.intro__seam {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; margin-left: -0.5px;
+  background: linear-gradient(180deg, transparent, var(--champagne) 50%, transparent);
+}
+/* The pieces GSAP scales or moves are centred with left/top, never the CSS
+   `translate` property: GSAP folds that into its own x/y, and the seal's flight
+   to the nav would then overwrite the centring and land off target. */
+.intro__glow {
+  position: absolute; width: 130vmin; height: 130vmin;
+  left: calc(50% - 65vmin); top: calc(50% - 65vmin); border-radius: 50%;
+  background: radial-gradient(circle, var(--intro-halo), transparent 60%);
+}
+
+.intro__cards { position: absolute; inset: 0; }
+.intro__rule {
+  position: absolute; left: 8vw; right: 8vw; top: 50%; height: 1px; margin-top: -0.5px;
+  background: linear-gradient(90deg, transparent, var(--champagne) 30%, var(--champagne) 70%, transparent);
+}
+.intro__spark {
+  position: absolute; left: 50%; top: 50%; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px;
+  border-radius: 50%; background: var(--champagne);
+  box-shadow: 0 0 22px 6px var(--intro-halo);
+}
+.intro__card { position: absolute; inset: 0; }
+/* Each card is two windows on the rule: the word rises out from behind it,
+   its index drops out beneath it, and both slip back the way they came. */
+.intro__clip {
+  position: absolute; left: var(--gutter); right: var(--gutter);
+  overflow: hidden; text-align: center;
+}
+.intro__clip--up { bottom: 50%; padding: 0.1em 0 clamp(10px, 1.8vh, 20px); }
+.intro__clip--down { top: 50%; padding: clamp(12px, 2.2vh, 22px) 0 4px; }
+.intro__say {
+  display: inline-block; white-space: nowrap;
+  font-family: var(--serif); font-weight: 300; line-height: 1;
+  font-size: clamp(2.7rem, 10.5vw, 8.5rem); letter-spacing: -0.01em;
+  color: var(--platinum);
+}
+.intro__say b { font-weight: 300; color: var(--champagne); }
+.intro__say-n {
+  display: inline-block; font-size: var(--step--1); font-weight: 500;
+  letter-spacing: 0.3em; padding-left: 0.3em; color: var(--silver-dim);
+}
+
+.intro__seal {
+  position: absolute; width: var(--seal); height: var(--seal);
+  left: calc(50% - var(--seal) / 2); top: calc(50% - var(--seal) / 2);
+}
+
+/* ---------- Seal artwork ----------
+   One drawing, used twice: the intro strikes it and the hero keeps it. Stroke
+   widths are in viewBox units, so both copies match line for line at any size. */
+.seal-art { overflow: visible; color: var(--platinum); }
+.seal-art .s-line {
+  fill: none; stroke: currentColor; stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.seal-art .s-ring, .seal-art .s-ring-in { stroke-linecap: butt; }
+.seal-art .s-thin { stroke-width: 0.8; stroke: var(--silver); }
+.seal-art .s-brass { stroke: var(--champagne); }
+.seal-art .s-node { fill: var(--champagne); }
+.seal-art .s-fill { fill: var(--champagne); }
+.seal-art .s-glint { fill: none; stroke: var(--champagne); stroke-width: 2.6; stroke-linecap: round; }
+.seal-art .s-legend {
+  font-family: var(--sans); font-size: 15px; font-weight: 500; letter-spacing: 3.4px;
+  fill: currentColor;
+}
+.seal-art .s-legend--sub {
+  font-family: var(--serif); font-style: italic; font-weight: 400;
+  font-size: 17px; letter-spacing: 0.6px; fill: var(--silver);
+}
+.intro__shock-ring {
+  position: absolute; width: calc(var(--seal) * 0.91); height: calc(var(--seal) * 0.91);
+  left: calc(50% - var(--seal) * 0.455); top: calc(50% - var(--seal) * 0.455);
+  border-radius: 50%; border: 1px solid var(--champagne);
+}
+.intro__motto {
+  position: absolute; left: var(--gutter); right: var(--gutter);
+  top: calc(50% + var(--seal) / 2 + clamp(12px, 3vh, 30px));
+  text-align: center; text-transform: uppercase; color: var(--silver);
+  font-size: clamp(0.62rem, 0.56rem + 0.3vw, 0.8rem);
+  letter-spacing: clamp(0.16em, 0.9vw, 0.42em); font-weight: 500;
+}
+
+/* Safety net: if the script never takes the overlay over, it must not trap
+   the page. Far longer than the sequence itself, so it never cuts one short. */
+html[data-intro="seal"] .intro { animation: intro-release 0.6s ease 15s forwards; }
+@keyframes intro-release { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 
 .intro__canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
 .intro__vignette {
@@ -369,20 +486,29 @@ body.intro-lock { overflow: hidden; height: 100vh; }
 /* =============================================================================
    CUSTOM CURSOR
    ========================================================================== */
+/* Always white, inverted against whatever is beneath it, so it reads on the
+   paper ground, the dark bands, photos and the stage alike. It can't follow the
+   theme tokens: on the light palette --white is near-black, and near-black under
+   `difference` comes out as the paper itself — an invisible pointer.
+   The native pointer is hidden, so nothing may ever paint over this one:
+   it sits above toasts, dialogs and the drawer. */
 .cursor, .cursor-ring {
-  position: fixed; top: 0; left: 0; z-index: 500; pointer-events: none;
+  position: fixed; top: 0; left: 0; z-index: 2147483647; pointer-events: none;
   border-radius: 50%; mix-blend-mode: difference;
   translate: -50% -50%;
+  transition: opacity 0.2s var(--ease);
 }
-.cursor { width: 6px; height: 6px; background: var(--white); }
+.cursor { width: 8px; height: 8px; background: #fff; }
 .cursor-ring {
-  width: 38px; height: 38px; border: 1px solid var(--ring-line);
-  transition: width 0.35s var(--ease), height 0.35s var(--ease),
-              background 0.35s var(--ease), border-color 0.35s var(--ease);
+  width: 38px; height: 38px; border: 1.5px solid rgba(255, 255, 255, 0.75);
+  transition: opacity 0.2s var(--ease), width 0.35s var(--ease), height 0.35s var(--ease),
+              background 0.35s var(--ease);
 }
-body.cursor-hover .cursor-ring { width: 68px; height: 68px; background: var(--ring-fill); }
-body.cursor-hover .cursor { width: 4px; height: 4px; }
+body.cursor-hover .cursor-ring { width: 68px; height: 68px; background: rgba(255, 255, 255, 0.1); }
+body.cursor-hover .cursor { width: 5px; height: 5px; }
 body.cursor-down .cursor-ring { width: 30px; height: 30px; }
+/* Out of sight until the pointer first moves, and while it is off the page. */
+body.cursor-away .cursor, body.cursor-away .cursor-ring { opacity: 0; }
 @media (hover: none), (pointer: coarse) {
   .cursor, .cursor-ring { display: none; }
 }
@@ -536,6 +662,88 @@ html[data-theme="light"] .footer .footer__mark { filter: invert(1) brightness(1.
   transform: translateX(-100%); animation: scrollPulse 2.4s var(--ease-in-out) infinite;
 }
 @keyframes scrollPulse { 0% { transform: translateX(-100%); } 60%,100% { transform: translateX(100%); } }
+
+/* ---------- Hero seal ----------
+   Planes stacked in one 3D space: .hseal__scroll carries the perspective and
+   the scroll exit, .hseal__tilt turns with the pointer, and each layer is set
+   back or forward by its data-z (script-applied, with a matching scale so the
+   planes line up exactly at rest and only separate when the seal turns).
+   Anything given opacity or a filter sits on a leaf, never on a preserve-3d
+   element, which would flatten the depth. */
+.hero__art {
+  position: absolute; inset: 0; z-index: 1; overflow: hidden; pointer-events: none;
+  --hs-glow: rgba(217, 201, 172, 0.16);
+  --hs-beam: rgba(217, 201, 172, 0.12);
+}
+html[data-theme="light"] .hero__art {
+  --hs-glow: rgba(176, 138, 74, 0.2);
+  --hs-beam: rgba(176, 138, 74, 0.15);
+}
+.hseal {
+  --hs: min(36vw, 540px, 60vh);
+  position: absolute; width: var(--hs); height: var(--hs);
+  left: calc(73% - var(--hs) / 2); top: calc(52% - var(--hs) / 2);
+}
+.hseal__scroll { position: absolute; inset: 0; perspective: 1400px; }
+.hseal__tilt { position: absolute; inset: 0; transform-style: preserve-3d; }
+.hseal__layer, .hseal__back { position: absolute; inset: 0; }
+.hseal__svg, .hseal__bezel { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* Before it enters — through the whole intro — it isn't rendered at all, so it
+   adds no layers while the intro and the WebGL stage are busy. */
+.hseal.is-dormant .hseal__scroll { display: none; }
+
+.hseal__halo {
+  position: absolute; inset: -30%; border-radius: 50%;
+  background: radial-gradient(circle, var(--hs-glow), transparent 64%);
+}
+/* A pool of light falling on the seal from above, breathing slowly. Plain
+   gradients only — a blurred, clipped shaft cost a full-size filter pass. */
+.hseal__light {
+  position: absolute; left: 10%; right: 10%; top: -70%; bottom: 8%;
+  background: radial-gradient(50% 100% at 50% 0%, var(--hs-beam), transparent 100%);
+  animation: hseal-breathe 9s ease-in-out infinite;
+}
+@keyframes hseal-breathe { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
+
+/* Two bezels turning against each other — a watchmaker's precision, slowly. */
+.hseal__bezel { color: var(--silver); animation: hseal-turn 140s linear infinite; }
+.hseal__bezel--rev { animation-duration: 95s; animation-direction: reverse; }
+@keyframes hseal-turn { to { transform: rotate(360deg); } }
+.hseal__bezel .b-ticks { fill: none; stroke: var(--line); stroke-width: 6; }
+.hseal__bezel .b-ticks--major { stroke: var(--silver-dim); stroke-width: 12; }
+.hseal__bezel .b-hair { fill: none; stroke: var(--line); stroke-width: 0.8; }
+.hseal__bezel .b-seg { stroke: var(--silver-dim); stroke-width: 0.9; opacity: 0.7; }
+.hseal__bezel .b-orbit, .hseal__bezel .b-dot { fill: var(--champagne); }
+
+.hseal__ripple {
+  position: absolute; inset: 4.5%; border-radius: 50%;
+  border: 1px solid var(--champagne); opacity: 0;
+}
+
+.hseal__dust i {
+  position: absolute; left: var(--x); top: var(--y); width: 3px; height: 3px;
+  border-radius: 50%; background: var(--champagne); opacity: 0;
+  animation: hseal-mote var(--t) linear var(--d) infinite;
+}
+@keyframes hseal-mote {
+  0%   { opacity: 0; transform: translate(0, 0); }
+  15%  { opacity: 0.55; }
+  60%  { opacity: 0.35; }
+  100% { opacity: 0; transform: translate(14px, -120px); }
+}
+.hseal.is-paused *, .hseal.is-paused { animation-play-state: paused; }
+
+/* Held back until the script has decided how it enters (JS adds .is-live
+   immediately). If the script never arrives, show it complete after a moment. */
+html.js .hseal:not(.is-live) { visibility: hidden; animation: hseal-release 0s linear 5s forwards; }
+@keyframes hseal-release { to { visibility: visible; } }
+
+/* Below the two-column width the seal becomes a watermark, bleeding off the
+   right edge behind the copy. */
+@media (max-width: 899px) {
+  .hero__art { opacity: 0.22; }
+  .hseal { --hs: min(104vw, 600px); left: calc(80% - var(--hs) / 2); top: calc(40% - var(--hs) / 2); }
+}
 
 /* =============================================================================
    SCALES
@@ -1093,6 +1301,8 @@ html[data-theme="light"] .footer .footer__mark { filter: invert(1) brightness(1.
   .about__chain i { transform: scaleX(1) !important; animation: none !important; }
   .about__chain i::after { opacity: 1 !important; animation: none !important; }
   .jscales__beam, .jscales__pan { transform: none !important; animation: none !important; }
+  .hseal__bezel, .hseal__light { animation: none !important; }
+  .hseal__dust, .hseal__ripple { display: none; }
   .courtroom, .approach, .finale { height: auto; min-height: 0; }
   .courtroom__pin, .approach__pin, .finale__pin { position: static; height: auto; padding-block: clamp(90px, 16vh, 160px); }
   .approach__track { flex-wrap: wrap; transform: none !important; }

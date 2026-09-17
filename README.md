@@ -3,14 +3,18 @@
 > Justice. Precision. Protection.
 
 A production-ready, cinematic single-page site for a fictional premium law brand.
-Dark editorial design system, a WebGL cinematic intro (courtroom → gavel strike →
-particle shield), a persistent Three.js stage that reacts to scroll and pointer,
+Dark editorial design system, two cinematic intros — a drawn seal (title cards →
+seal drawn and struck → doors part, seal lands in the hero) for daylight and
+devices without WebGL, and a WebGL courtroom (gavel strike → particle shield) for
+dark mode — a living hero seal (layered SVG in 3D: counter-turning bezels, light,
+dust, scales that tap and settle; tilts with the pointer, turns away on scroll),
+a persistent Three.js stage that reacts to scroll and pointer,
 GSAP/ScrollTrigger scroll choreography, Lenis smooth scroll, a custom cursor with
 magnetic buttons, and a fully-featured **static / reduced-motion experience** that
 degrades gracefully with no JavaScript or no WebGL.
 
 On top of that sits a **smart UI layer** (`smart.css` + `smart.js`, no dependencies):
-a ⌘K command palette, a light "reading mode" theme, live filtering and a detail
+a ⌘K command palette, a light "daylight" theme, live filtering and a detail
 drawer for the practice areas, a three-question matter-triage tool, bookmarkable
 insights, an FAQ accordion, animated counters, toasts, an action dock, a section
 rail, and a contact form with inline validation and draft recovery.
@@ -44,7 +48,7 @@ index.html              Semantic markup, SEO meta, JSON-LD (Organization +
 assets/css/main.css     Full design system + every section + responsive +
                         prefers-reduced-motion + no-JS / no-WebGL fallbacks.
                         Theme-sensitive surfaces are tokenised, and the light
-                        ("reading mode") palette lives here as [data-theme="light"].
+                        ("daylight") palette lives here as [data-theme="light"].
 assets/css/smart.css    Every smart-layer component: command palette, filter bars,
                         detail drawer, triage, metrics, FAQ, toasts, dock, rail,
                         consent bar, shortcuts sheet, smart-form states.
@@ -65,9 +69,11 @@ assets/js/scene.js       WebGL layer (ES module). Cinematic intro renderer:
                         warm overhead light shaft with drifting motes, a turned
                         walnut gavel with brass bands, the strike (flash +
                         shockwave + shake), then the dissolve into the shield. +
-                        persistent stage renderer (brushed-metal shield that
-                        rotates, follows the pointer, assembles in "Our Approach"
-                        and opens in the finale). Device-aware quality tiers.
+                        persistent stage renderer (dust halo behind the hero;
+                        shield layers that assemble in "Our Approach" and open
+                        in the finale). Device-aware quality tiers. The hero's
+                        emblem is the SVG seal in index.html, driven by
+                        initHeroSeal() in main.js.
 assets/img/             Placeholder shield icons + OG image (regenerate for prod).
 robots.txt · sitemap.xml · site.webmanifest
 ```
@@ -81,12 +87,15 @@ listens for:
 
 | event | fired by | effect |
 |---|---|---|
-| `ss:gavel-impact` | scene.js | shockwave + wordmark reveal + gavel sound |
-| `ss:intro-complete` | scene.js | dismiss intro overlay, unlock scroll, refresh ScrollTrigger |
+| `ss:gavel-impact` | scene.js · main.js (seal strike) | shockwave + wordmark reveal + gavel sound |
+| `ss:intro-complete` | scene.js · main.js (seal) | dismiss intro overlay, unlock scroll, refresh ScrollTrigger |
 | `ss:intro-skip` | main.js (skip button) | fast-forwards the intro timeline |
 | `ss:stage-live` | scene.js | fades in the `#stage` canvas |
 | `ss:approach` | main.js | `{progress}` drives the 5-layer shield assembly |
 | `ss:finale-enter` / `ss:finale-leave` | main.js | drives the shield "opening" |
+
+Which intro plays is decided in `<head>` (`html[data-intro="seal"|"court"]`) and
+confirmed by `main.js`; it plays once per tab (add `?intro` to the URL to replay).
 
 If the WebGL module never signals (CDN blocked, GPU disabled), `main.js` runs a
 CSS-only intro after a 3.2 s safety timeout and the `.stage-fallback` gradient

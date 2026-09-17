@@ -461,56 +461,10 @@ if (!SS.useWebGL) {
     warm.position.set(-3, 2, 4); scene.add(warm);
 
     /* --- master group holds every shield state --- */
+    // The hero has no 3D shield: its emblem is the drawn seal in the page
+    // (#hero-seal, animated by main.js). The stage behind it keeps the dust halo.
     const rig = new THREE.Group();
     scene.add(rig);
-
-    // hero shield: bevelled extrude, brushed dark metal + silver edge
-    const HW = 1.15, HH = 1.5;                 // hero shield half-width / half-height
-    const heroGeo = new THREE.ExtrudeGeometry(shieldShape(HW, HH), {
-      depth: 0.34, bevelEnabled: true, bevelThickness: 0.12, bevelSize: 0.1, bevelSegments: 4, curveSegments: 48,
-    });
-    heroGeo.center();
-    const heroMat = metal({
-      color: 0x1c2636, roughness: 0.3, envMapIntensity: 1.7,
-      emissive: 0x0a1220, emissiveIntensity: 0.45,
-    });
-    const heroShield = new THREE.Mesh(heroGeo, heroMat);
-
-    // crisp platinum edge line — reads as a bordered, engraved emblem
-    const edgeLines = new THREE.LineSegments(
-      new THREE.EdgesGeometry(heroGeo, 24),
-      new THREE.LineBasicMaterial({ color: 0xc9ced8, transparent: true, opacity: 0.55 })
-    );
-    // The wordmark's arrow — a stem under a chevron head — inlaid on the face.
-    // Coordinates are the logo's own, expressed as fractions of the shield's
-    // half-extents so the 3D emblem and the 2D mark can never drift apart.
-    const mark = new THREE.Group();
-    const markMats = [metal({ color: 0xc9ced8, roughness: 0.18 })];
-    const MARK_T = 0.045;                      // stroke thickness
-    const strut = (u1, v1, u2, v2) => {
-      const x1 = u1 * HW, y1 = v1 * HH, x2 = u2 * HW, y2 = v2 * HH;
-      const dx = x2 - x1, dy = y2 - y1;
-      const m = new THREE.Mesh(
-        new THREE.BoxGeometry(Math.hypot(dx, dy), MARK_T, MARK_T), markMats[0]);
-      m.position.set((x1 + x2) / 2, (y1 + y2) / 2, 0);
-      m.rotation.z = Math.atan2(dy, dx);
-      return m;
-    };
-    // The logo lets the stem overshoot the chevron apex by a couple of units —
-    // invisible at favicon size, but at hero scale it turns the arrow into a
-    // cross. Landing the apex on the stem's top keeps it reading as an arrow.
-    mark.add(
-      strut(0, 0.5625, 0, -0.5),                 // stem
-      strut(-0.5, 0.2813, 0, 0.5625),            // chevron, left arm
-      strut(0.5, 0.2813, 0, 0.5625)              // chevron, right arm
-    );
-    mark.position.z = 0.34;
-
-    const heroWrap = new THREE.Group();
-    heroWrap.add(heroShield, edgeLines, mark);
-    // keep a handle for the loop's opacity control
-    const engrave = { material: edgeLines.material };
-    rig.add(heroWrap);
 
     // approach layers: 5 concentric shield outlines that assemble on scroll
     const layers = [];
@@ -563,9 +517,9 @@ if (!SS.useWebGL) {
     /* --- palettes ---------------------------------------------------------
        The stage has to hold up on chambers paper as well as on midnight, so
        every colour that was tuned for the dark ground gets a daylight twin.
-       Two rules drive the light set: the shield stays deep ink (a dark solid
-       reads as an emblem on white, a silver one washes out), and the halo has
-       to drop additive blending or it disappears into the page entirely. */
+       Two rules drive the light set: the shield layers stay dark solids (a
+       dark solid reads as an emblem on white, a silver one washes out), and the
+       halo has to drop additive blending or it disappears into the page entirely. */
     const PALETTES = {
       dark: {
         exposure: 1.0,
@@ -574,10 +528,7 @@ if (!SS.useWebGL) {
         fill: { c: 0x2f4f82, i: 1.0 },
         rim:  { c: 0xc9ced8, i: 1.6 },
         warm: { c: 0xd9c9ac, i: 20 },
-        shield: { c: 0x1c2636, rough: 0.3, env: 1.7, em: 0x0a1220, emI: 0.45 },
         metalness: 1,
-        edge:   { c: 0xc9ced8, gain: 0.7, narrow: 0.2 },
-        mark:   { c: 0xc9ced8, metalness: 1, rough: 0.18 },
         layer:  { odd: 0x1a2536, even: 0x0f1622 },
         ring:   0x141d2b,
         halo:   { c: 0x8b93a3, size: 0.018, blend: THREE.AdditiveBlending, base: 0.14, gain: 0.36 },
@@ -589,14 +540,11 @@ if (!SS.useWebGL) {
         fill: { c: 0xa8b8d4, i: 0.8 },   // one cool note keeps the walnut rich
         rim:  { c: 0xb08a4a, i: 1.1 },   // brass counter-rim
         warm: { c: 0xffe6c4, i: 8 },     // kept low or the bevel blows to orange
-        // Walnut and brass, the same pair the intro's gavel is cut from. A full
-        // metal is lit almost entirely by the environment, so a dark base would
-        // collapse to a flat cut-out on paper; a low metalness keeps it lacquered
-        // wood and lets the key and fill sculpt the face into a real gradient.
-        shield: { c: 0x6b3f1f, rough: 0.3, env: 1.35, em: 0x000000, emI: 0 },
+        // Walnut, the wood the intro's gavel is cut from. A full metal is lit
+        // almost entirely by the environment, so a dark base would collapse to
+        // a flat cut-out on paper; a low metalness keeps it lacquered wood and
+        // lets the key and fill sculpt the faces into a real gradient.
         metalness: 0.35,
-        edge:   { c: 0xb08a4a, gain: 1, narrow: 0.4 },
-        mark:   { c: 0xb08a4a, metalness: 0.85, rough: 0.32 },
         layer:  { odd: 0x7a4a26, even: 0x55321a },
         ring:   0x6b4423,
         halo:   { c: 0x7a6248, size: 0.02, blend: THREE.NormalBlending, base: 0.1, gain: 0.26 },
@@ -616,19 +564,6 @@ if (!SS.useWebGL) {
       rimBack.color.setHex(p.rim.c);  rimBack.intensity = p.rim.i;
       warm.color.setHex(p.warm.c);    warm.intensity = p.warm.i;
 
-      heroMat.color.setHex(p.shield.c);
-      heroMat.roughness = p.shield.rough;
-      heroMat.metalness = p.metalness;
-      heroMat.envMapIntensity = p.shield.env;
-      heroMat.emissive.setHex(p.shield.em);
-      heroMat.emissiveIntensity = p.shield.emI;
-
-      edgeLines.material.color.setHex(p.edge.c);
-      markMats.forEach((m) => {
-        m.color.setHex(p.mark.c);
-        m.metalness = p.mark.metalness;
-        m.roughness = p.mark.rough;
-      });
       layers.forEach((m, i) => {
         m.material.color.setHex(i % 2 ? p.layer.odd : p.layer.even);
         m.material.metalness = p.metalness;
@@ -641,8 +576,8 @@ if (!SS.useWebGL) {
       haloPts.material.needsUpdate = true;
     }
 
-    // 'daylight' is the light-ground cinematic mode; every other mode keeps the
-    // stage on its midnight palette (reading mode hides the canvas outright).
+    // 'daylight' is the light-ground cinematic mode; dark keeps the stage on
+    // its midnight palette.
     const paletteFor = () =>
       document.documentElement.getAttribute('data-mode') === 'daylight' ? 'light' : 'dark';
     applyPalette(paletteFor());
@@ -707,25 +642,6 @@ if (!SS.useWebGL) {
       camera.lookAt(0, 0, 0);
       warm.position.x = lerp(warm.position.x, -3 + pointer.x * 2, 0.05);
 
-      // ---- HERO ----
-      const heroActive = mode === 'hero';
-      heroWrap.visible = heroFade > 0.01;
-      heroWrap.rotation.y = t * 0.16 + pointer.x * 0.3;
-      heroWrap.rotation.x = lerp(heroWrap.rotation.x, -0.06 + pointer.y * 0.16, 0.06);
-      const narrow = innerWidth < 900;
-      const heroScale = narrow ? 1.0 : 1.05;
-      heroWrap.scale.setScalar(lerp(heroWrap.scale.x || heroScale, heroActive ? heroScale : 0.85, 0.05));
-      heroWrap.position.x = lerp(heroWrap.position.x, heroActive ? (narrow ? 0 : 3.35) : 0, 0.05);
-      heroWrap.position.y = lerp(heroWrap.position.y, heroActive ? (narrow ? -0.2 : 0.25) : 0, 0.05);
-      heroWrap.position.z = lerp(heroWrap.position.z, heroActive ? (narrow ? -5 : -1.2) : 0, 0.05);
-      heroMat.opacity = heroFade * (narrow ? 0.32 : 1); heroMat.transparent = true;
-      engrave.material.opacity = heroFade * (narrow ? PAL.edge.narrow : PAL.edge.gain); engrave.material.transparent = true;
-      // The mark's metal has no opacity of its own, so without this it stayed
-      // fully opaque as the shield dissolved — a brass arrow left floating over
-      // the copy of whatever section you had scrolled to.
-      mark.visible = !narrow && heroFade > 0.02;
-      markMats.forEach((m) => { m.transparent = true; m.opacity = heroFade; });
-
       // ---- APPROACH (assemble) ----
       layers.forEach((m, i) => {
         const startAt = i * 0.16;
@@ -768,12 +684,12 @@ if (!SS.useWebGL) {
   /*  BOOT                                                                   */
   /* ====================================================================== */
   const introEl = document.getElementById('intro');
-  // main.js runs first and already marks the intro done in the light modes —
-  // but check here as well, so the gavel scene can never be spun up on the GPU
-  // behind a light page if the script load order ever changes.
-  const lightMode = document.documentElement.getAttribute('data-theme') === 'light';
+  // main.js runs first and has already chosen the entrance. Only the courtroom
+  // needs this module; the seal is SVG, so the stage starts straight away and is
+  // warm behind the doors by the time they part.
+  const courtIntro = document.documentElement.getAttribute('data-intro') === 'court';
   const introDismissed = !introEl || introEl.classList.contains('is-done')
-    || document.body.classList.contains('no-webgl') || lightMode;
+    || document.body.classList.contains('no-webgl') || !courtIntro;
 
   if (SS.prefersReduced || introDismissed) {
     startStage();

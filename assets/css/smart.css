@@ -70,8 +70,8 @@
 .nav__search svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; flex: none; }
 .nav__search span { letter-spacing: 0.02em; }
 
-/* Three modes cycle through one control, so the glyph shows the DESTINATION:
-   dark -> sun (daylight next), daylight -> book (reading next), reading -> moon. */
+/* Two modes swap in one control, so the glyph shows the DESTINATION:
+   dark -> sun (daylight next), daylight -> moon (dark next). */
 .theme-switch { position: relative; overflow: hidden; }
 .theme-switch svg {
   position: absolute;
@@ -79,8 +79,7 @@
   transform: translateY(140%) rotate(-40deg); opacity: 0;
 }
 html[data-mode="dark"] .theme-switch .ico-sun,
-html[data-mode="daylight"] .theme-switch .ico-read,
-html[data-mode="reading"] .theme-switch .ico-moon,
+html[data-mode="daylight"] .theme-switch .ico-moon,
 html:not([data-mode]) .theme-switch .ico-sun { transform: translateY(0) rotate(0deg); opacity: 1; }
 
 /* Step down one element at a time rather than collapsing the bar all at once. */

@@ -76,32 +76,45 @@
     const dot = document.getElementById('cursor-dot');
     const ring = document.getElementById('cursor-ring');
     if (!dot || !ring) return;
-    document.body.classList.add('use-cursor');
+    const body = document.body;
+    body.classList.add('use-cursor', 'cursor-away');
 
     let mx = innerWidth / 2, my = innerHeight / 2;
     let rx = mx, ry = my;
 
+    // Position only. The CSS `translate: -50% -50%` already centres both on
+    // the point; a second -50% here stacked with it, which left the real click
+    // point on the dot's lower-right edge and the ring well up-left of it.
     addEventListener('pointermove', (e) => {
       mx = e.clientX; my = e.clientY;
-      dot.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+      if (body.classList.contains('cursor-away')) {
+        // Arriving on the page: snap the ring instead of sweeping it in.
+        rx = mx; ry = my;
+        body.classList.remove('cursor-away');
+      }
+      dot.style.transform = `translate(${mx}px, ${my}px)`;
     }, { passive: true });
+    document.addEventListener('pointerout', (e) => {
+      if (!e.relatedTarget) body.classList.add('cursor-away');
+    });
 
-    addEventListener('pointerdown', () => document.body.classList.add('cursor-down'));
-    addEventListener('pointerup', () => document.body.classList.remove('cursor-down'));
+    addEventListener('pointerdown', () => body.classList.add('cursor-down'));
+    addEventListener('pointerup', () => body.classList.remove('cursor-down'));
 
     const loop = () => {
       rx += (mx - rx) * 0.16;
       ry += (my - ry) * 0.16;
-      ring.style.transform = `translate(${rx}px, ${ry}px) translate(-50%, -50%)`;
+      ring.style.transform = `translate(${rx}px, ${ry}px)`;
       requestAnimationFrame(loop);
     };
     loop();
 
+    // Delegated, so controls created after boot — toasts, palette results,
+    // drawer content — get the hover state as well.
     const hoverSel = 'a, button, [data-cursor], input, select, textarea, .panel, .doc, .card';
-    document.querySelectorAll(hoverSel).forEach((el) => {
-      el.addEventListener('pointerenter', () => document.body.classList.add('cursor-hover'));
-      el.addEventListener('pointerleave', () => document.body.classList.remove('cursor-hover'));
-    });
+    addEventListener('pointerover', (e) => {
+      body.classList.toggle('cursor-hover', !!e.target.closest?.(hoverSel));
+    }, { passive: true });
   }
 
   /* ---------------------------------------------------------------- Magnetic buttons */
@@ -521,6 +534,211 @@
 
   const tick = () => SS.audio?.ui(880);
 
+  /* ---------------------------------------------------------------- Seal artwork
+     The seal is on the page twice — struck in the intro, alive in the hero —
+     from the same drawing, so these build and move either copy. */
+  const SEAL_ARM = 44;   // beam pivot to each hook, in viewBox units
+
+  // Damped swing that lands exactly level: the envelope is zero at p = 1, so
+  // there is no final snap.
+  const sealSettle = (p, amp = 13) => -amp * Math.pow(1 - p, 2.2) * Math.cos(p * 13.2);
+
+  // Returns a setter for the beam's angle. Written as SVG transform attributes,
+  // not GSAP transforms: the pans hang from the beam's ends, so they only ever
+  // translate, and plain SVG maths keeps them on the hooks.
+  function sealScales(root) {
+    const beam = root.querySelector('.s-beam');
+    const pans = root.querySelectorAll('.s-pan');
+    return (deg) => {
+      const rad = (deg * Math.PI) / 180;
+      const dx = SEAL_ARM - SEAL_ARM * Math.cos(rad);
+      const dy = SEAL_ARM * Math.sin(rad);
+      beam.setAttribute('transform', `rotate(${deg.toFixed(3)} 200 164)`);
+      pans[0].setAttribute('transform', `translate(${dx.toFixed(3)} ${(-dy).toFixed(3)})`);
+      pans[1].setAttribute('transform', `translate(${(-dx).toFixed(3)} ${dy.toFixed(3)})`);
+    };
+  }
+
+  // Undraw: every stroke back to a dash offset that hides it (the inner ring
+  // draws the other way round), every brass node to nothing, the fill clear.
+  function primeSeal(root) {
+    root.querySelectorAll('[stroke-dasharray="1"]').forEach((el) =>
+      el.setAttribute('stroke-dashoffset', el.classList.contains('s-ring-in') ? -1 : 1));
+    root.querySelectorAll('[data-r]').forEach((el) => el.setAttribute('r', 0));
+    root.querySelectorAll('.s-fill').forEach((el) => el.setAttribute('fill-opacity', 0));
+  }
+
+  // The construction, added to `tl` from label `at`: rim, shield, the legend
+  // engraved in one sweep, then the scales drawn tipped and swung level (done
+  // by at+3.2). Returns a function that re-applies the beam's current angle —
+  // a seek suppresses onUpdate, so a skip has to call it.
+  function drawSeal(tl, root, at) {
+    const one = (s) => root.querySelector(s);
+    const all = (s) => Array.from(root.querySelectorAll(s));
+    const draw = (targets, t, duration, ease = 'power2.inOut') =>
+      tl.to(targets, { attr: { 'stroke-dashoffset': 0 }, duration, ease }, `${at}+=${t}`);
+    const pop = (targets, t, stagger = 0.06) =>
+      tl.to(targets, { attr: { r: (i, el) => el.dataset.r }, duration: 0.45, ease: 'back.out(3)', stagger }, `${at}+=${t}`);
+
+    draw(one('.s-ring'), 0, 0.95);
+    draw(one('.s-ring-in'), 0.08, 1.05);
+    draw(all('.s-arm'), 0.28, 0.42, 'power2.in');
+    draw(one('.s-point'), 0.7, 0.5, 'power2.out');
+    draw(one('.s-engrave'), 0.5, 1.15, 'power1.inOut');
+    draw(one('.s-inset'), 0.85, 0.8);
+    draw(one('.s-pillar'), 0.95, 0.3, 'power2.out');
+    draw(one('.s-base'), 1.08, 0.3);
+    draw(one('.s-bar'), 1.1, 0.32);
+    draw(all('.s-string'), 1.32, 0.26);
+    draw(all('.s-dish'), 1.5, 0.24, 'power2.out');
+    pop(all('.s-shield-node'), 1.15, 0.07);
+    pop(all('.s-beam-node'), 1.28, 0.05);
+    pop(all('.s-rim-dot'), 1.6);
+
+    const tilt = sealScales(root);
+    const swing = { p: 0 };
+    const sync = () => tilt(sealSettle(swing.p));
+    sync();
+    tl.to(swing, { p: 1, duration: 1.9, ease: 'none', onUpdate: sync }, `${at}+=1.3`);
+    return sync;
+  }
+
+  /* ---------------------------------------------------------------- Hero seal
+     Enters one of two ways — the intro's seal lands on it (land), or it draws
+     itself in (enter) — then lives: bezels turning against each other, light
+     breathing, dust rising, and every ten seconds a tap on the scales, a
+     ripple off the rim and a brass glint round it. Turns in 3D with the
+     pointer (a slow drift on touch), and tilts away as the hero scrolls off. */
+  let heroSeal = null;
+
+  function initHeroSeal() {
+    const el = document.getElementById('hero-seal');
+    const noop = { enter() {}, land() {}, target: () => null };
+    if (!el) return noop;
+    el.classList.add('is-live');
+    // Reduced motion, or no motion library: the finished seal, standing still.
+    if (prefersReduced || !hasGSAP) return noop;
+
+    const one = (s) => el.querySelector(s);
+    const all = (s) => Array.from(el.querySelectorAll(s));
+    const scroller = one('.hseal__scroll');
+    const tiltEl = one('.hseal__tilt');
+    // back glow + light, the two bezels, then ripple and dust — in page order
+    const fx = all('.hseal__fx');
+    const ripple = one('.hseal__ripple');
+    const glint = one('.s-glint');
+    const setBeam = sealScales(el);
+
+    // Depth. Each plane is pushed along z and scaled by the inverse of the
+    // perspective it gains, so at rest every plane lines up with the flat seal
+    // the intro hands over — the depth only shows once the seal turns.
+    const PERSPECTIVE = 1400;
+    all('.hseal__layer').forEach((layer) => {
+      const z = Number(layer.dataset.z) || 0;
+      gsap.set(layer, { z, scale: (PERSPECTIVE - z) / PERSPECTIVE });
+    });
+    gsap.set(el, { autoAlpha: 0 });
+    el.classList.add('is-dormant');
+
+    let shown = false, idle = null, drift = null, active = true;
+
+    const setActive = (on) => {
+      active = on;
+      el.classList.toggle('is-paused', !on);
+      idle?.paused(!on);
+      drift?.paused(!on);
+    };
+
+    const startIdle = () => {
+      if (idle) return;
+      // One ten-second cycle so every beat stays in step: a tap on the scales
+      // that settles into a slow breath, a ripple as it's tapped, then the glint.
+      const clock = { u: 0 };
+      idle = gsap.timeline({ repeat: -1, paused: !active })
+        .to(clock, {
+          u: 10, duration: 10, ease: 'none',
+          onUpdate: () => {
+            const u = clock.u;
+            setBeam(u < 2.6
+              ? 5 * Math.sin((u / 2.6) * 12.6) * Math.pow(1 - u / 2.6, 2.2)
+              : 0.9 * Math.sin(((u - 2.6) / 7.4) * Math.PI * 2));
+          },
+        }, 0)
+        .fromTo(ripple, { scale: 1, opacity: 0.5 },
+          { scale: 1.75, opacity: 0, duration: 2.6, ease: 'power2.out', immediateRender: false }, 0.2)
+        .set(glint, { attr: { 'stroke-dashoffset': 0 } }, 3.2)
+        .to(glint, { attr: { opacity: 0.9 }, duration: 0.3 }, 3.2)
+        .to(glint, { attr: { 'stroke-dashoffset': -1 }, duration: 1.8, ease: 'power2.inOut' }, 3.2)
+        .to(glint, { attr: { opacity: 0 }, duration: 0.4 }, 4.6);
+
+      if (SS.coarse) {
+        drift = gsap.timeline({ repeat: -1, paused: !active })
+          .to(tiltEl, { rotationY: 7, rotationX: -3, duration: 4, ease: 'sine.inOut' })
+          .to(tiltEl, { rotationY: -7, rotationX: 3, duration: 8, ease: 'sine.inOut' })
+          .to(tiltEl, { rotationY: 0, rotationX: 0, duration: 4, ease: 'sine.inOut' });
+      } else {
+        const rx = gsap.quickTo(tiltEl, 'rotationX', { duration: 1.2, ease: 'power3' });
+        const ry = gsap.quickTo(tiltEl, 'rotationY', { duration: 1.2, ease: 'power3' });
+        addEventListener('pointermove', (e) => {
+          if (!active) return;
+          ry((e.clientX / innerWidth - 0.5) * 20);
+          rx(-(e.clientY / innerHeight - 0.5) * 14);
+        }, { passive: true });
+      }
+    };
+
+    if (typeof ScrollTrigger !== 'undefined') {
+      gsap.to(scroller, {
+        yPercent: 16, scale: 0.84, rotation: -7, opacity: 0, ease: 'none',
+        scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 0.6 },
+      });
+      ScrollTrigger.create({
+        trigger: '.hero', start: 'top bottom', end: 'bottom top',
+        onToggle: (self) => setActive(self.isActive),
+      });
+    }
+
+    return {
+      // Where the intro's seal should land: this seal's box, at rest.
+      target: () => el.getBoundingClientRect(),
+
+      // The intro's seal is arriving on top of this one, drawn and level:
+      // crossfade under it, then bring up the light and bezels around it.
+      land(duration = 0.45) {
+        if (shown) return;
+        shown = true;
+        el.classList.remove('is-dormant');
+        gsap.set(fx, { opacity: 0 });
+        gsap.to(el, { autoAlpha: 1, duration, ease: 'power1.inOut' });
+        gsap.to(fx, { opacity: 1, duration: 1.8, ease: 'power2.out', stagger: 0.12, delay: duration * 0.5 });
+        gsap.delayedCall(duration + 0.4, startIdle);
+      },
+
+      // No intro to hand over: draw the seal in, strike it, bring it to life.
+      enter(delay = 0) {
+        if (shown) return;
+        shown = true;
+        el.classList.remove('is-dormant');
+        primeSeal(el);
+        gsap.set(fx, { opacity: 0 });
+        gsap.set(el, { autoAlpha: 1 });
+        const tl = gsap.timeline({ delay, defaults: { ease: 'power2.inOut' }, onComplete: startIdle });
+        tl.addLabel('draw', 0.15)
+          .to(fx[0], { opacity: 1, duration: 1.8, ease: 'power1.out' }, 0);
+        drawSeal(tl, el, 'draw');
+        tl.to(fx.slice(1, 3), { opacity: 1, duration: 1.4, ease: 'power2.out', stagger: 0.25 }, 'draw+=1.1')
+          .addLabel('struck', 'draw+=2.1')
+          .to(one('.s-fill'), { attr: { 'fill-opacity': 0.09 }, duration: 0.6, ease: 'power2.out' }, 'struck')
+          .to(fx.slice(3), { opacity: 1, duration: 0.01 }, 'struck')
+          .fromTo(ripple, { scale: 1, opacity: 0.6 },
+            { scale: 1.9, opacity: 0, duration: 1.6, ease: 'power2.out', immediateRender: false }, 'struck')
+          .set(glint, { attr: { 'stroke-dashoffset': 0, opacity: 0.9 } }, 'struck+=0.1')
+          .to(glint, { attr: { 'stroke-dashoffset': -1 }, duration: 1.2, ease: 'power2.inOut' }, 'struck+=0.1')
+          .to(glint, { attr: { opacity: 0 }, duration: 0.3 }, 'struck+=1.0');
+      },
+    };
+  }
+
   /* ---------------------------------------------------------------- Intro orchestration */
   function initIntro() {
     const intro = document.getElementById('intro');
@@ -530,19 +748,31 @@
     const skip = document.getElementById('intro-skip');
     if (!intro) return;
 
-    const seen = sessionStorage.getItem('ss-intro-seen');
-    // The intro is a dark courtroom set, built as the entrance to the dark
-    // stage. In daylight or reading mode it would be seconds of black in front
-    // of a light site — so it only plays for visitors who open in dark mode.
-    const lightMode = document.documentElement.getAttribute('data-theme') === 'light';
-    const skipIntro = prefersReduced || seen || !useWebGL || lightMode;
+    const root = document.documentElement;
+    const forced = /[?&]intro\b/.test(location.search);
+    let seen = false;
+    try { seen = !forced && !!sessionStorage.getItem('ss-intro-seen'); } catch (e) {}
+
+    // Two entrances. The WebGL courtroom is a dark set, built as the way into
+    // the dark stage — in daylight it would be seconds of black in front of a
+    // light site. Daylight, and any device that can't run WebGL, gets the
+    // drawn seal instead, which is plain SVG and takes its colours from the theme.
+    const lightMode = root.getAttribute('data-theme') === 'light';
+    const variant = useWebGL && !lightMode ? 'court' : 'seal';
+    root.setAttribute('data-intro', variant);
+    const skipIntro = prefersReduced || seen || (variant === 'seal' && !hasGSAP);
 
     const finish = () => {
       intro.classList.add('is-done');
       document.body.classList.remove('intro-lock');
-      sessionStorage.setItem('ss-intro-seen', '1');
+      SS.lenis?.start();
+      if ('scrollRestoration' in history) history.scrollRestoration = 'auto';
+      try { sessionStorage.setItem('ss-intro-seen', '1'); } catch (e) {}
       moveSoundToggle();
       if (hasGSAP) ScrollTrigger.refresh();
+      // The seal intro has already landed its seal on the hero; the courtroom,
+      // or an intro cut short by its deadline, hands over to the hero drawing its own.
+      heroSeal?.enter(0.3);
       window.dispatchEvent(new Event('ss:site-ready'));
       setTimeout(() => intro.remove(), 1100);
     };
@@ -554,6 +784,7 @@
       setTimeout(() => intro.remove(), 200);
       moveSoundToggle();
       revealHeroStatic();
+      heroSeal?.enter(0.35);
       // The dock, the consent bar and the sound toggle all wait on these to
       // know the intro is out of the way. This path never fired them, which
       // left the dock hidden ~8s and the consent bar ~12s. Next tick, so every
@@ -566,6 +797,19 @@
     }
 
     document.body.classList.add('intro-lock');
+    // Lenis drives the scroll itself, so the overflow lock alone doesn't stop
+    // a wheel moving the page behind the overlay.
+    SS.lenis?.stop();
+    // Open onto the hero, not wherever the last visit left the scroll — unless
+    // the link was to a section. Restoration would otherwise land after this
+    // and undo it; finish() hands it back for later reloads.
+    if (!location.hash) {
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+      window.scrollTo(0, 0);
+    }
+    window.addEventListener('ss:intro-complete', finish, { once: true });
+
+    if (variant === 'seal') { runSealIntro(skip); return; }
 
     // Brand reveal happens on gavel impact (fired by scene.js)
     const revealBrand = () => {
@@ -589,7 +833,6 @@
     };
 
     window.addEventListener('ss:gavel-impact', revealBrand, { once: true });
-    window.addEventListener('ss:intro-complete', finish, { once: true });
 
     skip?.addEventListener('click', () => {
       window.dispatchEvent(new Event('ss:intro-skip'));
@@ -611,6 +854,180 @@
     setTimeout(() => {
       if (!intro.classList.contains('is-done')) { revealBrand(); finish(); }
     }, 9000);
+  }
+
+  /* ---------------------------------------------------------------- Seal intro
+     I.   A point of brass stretches into a rule; the firm's three words rise off
+          it one at a time, each with its index dropping beneath.
+     II.  The rule collapses back to the point and the seal is drawn out of it —
+          rim, shield, the scales tipping as they're drawn and swinging level,
+          the legend engraved around the rim in one sweep.
+     III. The seal is struck: a press, a shockwave, a brass glint round the rim.
+     IV.  The ground parts at the centre like a pair of doors, and the seal flies
+          across onto the hero's seal — the same drawing — and becomes it. */
+  function runSealIntro(skip) {
+    const film = document.getElementById('intro-film');
+    let done = false;
+    const complete = () => {
+      if (done) return;
+      done = true;
+      detach();
+      window.dispatchEvent(new Event('ss:intro-complete'));
+    };
+
+    // Skip lands on the doors opening rather than cutting to the page, so a
+    // skipped intro still hands over the same way a watched one does.
+    let tl = null, skipped = false, builtAt = 0, syncBeam = () => {};
+    const skipNow = () => {
+      if (skipped || done) return;
+      skipped = true;
+      detach();
+      if (tl && tl.time() < tl.labels.exit) { tl.seek('exit'); syncBeam(); }
+    };
+    // A scroll is a request for the site — but not trackpad momentum carried
+    // over from the page before.
+    const onWheel = () => { if (tl && performance.now() - builtAt > 700) skipNow(); };
+    const onKey = (e) => { if (e.key === 'Escape') skipNow(); };
+    const detach = () => {
+      removeEventListener('wheel', onWheel);
+      removeEventListener('touchmove', onWheel);
+      removeEventListener('keydown', onKey);
+    };
+    skip?.addEventListener('click', skipNow);
+    addEventListener('wheel', onWheel, { passive: true });
+    addEventListener('touchmove', onWheel, { passive: true });
+    addEventListener('keydown', onKey);
+
+    if (!film) { complete(); return; }
+    window.__ssIntroStarted = true;
+
+    const one = (s) => film.querySelector(s);
+    const all = (s) => Array.from(film.querySelectorAll(s));
+    const stage = one('.intro__stage');
+    const seal = one('.intro__seal');
+
+    // Where the seal lands: exactly on the hero's seal, which is the same
+    // drawing. If that is off screen (a link straight to a section), onto the
+    // nav logo instead, scaled so its rim sits on the rim printed in that image.
+    // Measured once, when the flight starts.
+    let flightPath = null;
+    const flight = () => {
+      if (flightPath) return flightPath;
+      const a = seal.getBoundingClientRect();
+      const hero = heroSeal?.target();
+      const nav = document.querySelector('.brand__mark img')?.getBoundingClientRect();
+      let b = null, fit = 1;
+      if (hero && hero.width && hero.bottom > 0 && hero.top < innerHeight) b = hero;
+      else if (nav && nav.width && nav.bottom > 0) { b = nav; fit = 0.92 / 0.91; }
+      flightPath = b
+        ? {
+            x: b.left + b.width / 2 - (a.left + a.width / 2),
+            y: b.top + b.height / 2 - (a.top + a.height / 2),
+            scale: (b.width * fit) / a.width,
+            hero: b === hero,
+          }
+        : { x: 0, y: -a.height * 0.15, scale: 0.5, hero: false };
+      return flightPath;
+    };
+
+    const build = () => {
+      if (done) return;
+      const rule = one('.intro__rule');
+      const spark = one('.intro__spark');
+      const glow = one('.intro__glow');
+      const seam = one('.intro__seam');
+      const shock = one('.intro__shock-ring');
+      const motto = one('.intro__motto');
+      const glint = one('.s-glint');
+      const words = all('.intro__say');
+      const nums = all('.intro__say-n');
+
+      gsap.set(spark, { scale: 0, opacity: 0 });
+      gsap.set(rule, { scaleX: 0 });
+      // Far enough to clear each window, padding included: the index is a short
+      // line under a tall gap, so it has to travel well over its own height.
+      const WORD_OUT = 150, NUM_OUT = -280;
+      gsap.set(words, { yPercent: WORD_OUT });
+      gsap.set(nums, { yPercent: NUM_OUT });
+      gsap.set(seal, { autoAlpha: 0 });
+      gsap.set([glow, seam, shock, motto], { opacity: 0 });
+      primeSeal(seal);
+      stage.style.visibility = 'visible';
+
+      tl = gsap.timeline({ defaults: { ease: 'power2.inOut' }, onComplete: complete });
+
+      /* I — the rule and the three cards */
+      tl.to(spark, { scale: 1, opacity: 1, duration: 0.35, ease: 'power2.out' }, 0.1)
+        .to(rule, { scaleX: 1, duration: 0.8, ease: 'expo.inOut' }, 0.25)
+        .to(spark, { opacity: 0, duration: 0.4 }, 0.5);
+      words.forEach((word, i) => {
+        const t = 0.5 + i * 0.52;
+        tl.fromTo(word, { letterSpacing: '0.1em' },
+            { yPercent: 0, letterSpacing: '-0.01em', duration: 0.55, ease: 'power4.out', immediateRender: false }, t)
+          .to(nums[i], { yPercent: 0, duration: 0.45, ease: 'power3.out' }, t + 0.06)
+          .to(word, { yPercent: WORD_OUT, duration: 0.28, ease: 'power3.in' }, t + 0.46)
+          .to(nums[i], { yPercent: NUM_OUT, duration: 0.24, ease: 'power3.in' }, t + 0.46);
+      });
+
+      /* II — collapse to the point, draw the seal out of it */
+      tl.to(rule, { scaleX: 0, duration: 0.42, ease: 'expo.in' }, 1.98)
+        .addLabel('seal', 2.38)
+        .set(spark, { scale: 0.3, opacity: 1 }, 'seal')
+        .to(spark, { scale: 2.6, opacity: 0, duration: 0.55, ease: 'power2.out' }, 'seal')
+        .set(seal, { autoAlpha: 1 }, 'seal')
+        .to(glow, { opacity: 1, duration: 1.2, ease: 'power1.out' }, 'seal');
+      syncBeam = drawSeal(tl, seal, 'seal');
+
+      /* III — struck */
+      tl.addLabel('stamp', 'seal+=2.05')
+        .to(seal, { scale: 1.05, duration: 0.24, ease: 'power2.out' }, 'stamp')
+        .to(seal, { scale: 1, duration: 0.14, ease: 'power4.in' }, 'stamp+=0.24')
+        .addLabel('impact', 'stamp+=0.38')
+        // the synthesised gavel, if the visitor has sound on
+        .call(() => window.dispatchEvent(new Event('ss:gavel-impact')), null, 'impact')
+        .to(stage, { keyframes: { x: [0, -5, 4, -2, 1, 0] }, duration: 0.32, ease: 'none' }, 'impact')
+        .set(shock, { scale: 1, opacity: 0.75 }, 'impact')
+        .to(shock, { scale: 2.7, opacity: 0, duration: 1.1, ease: 'power2.out' }, 'impact')
+        .set(glow, { scale: 1.3 }, 'impact')
+        .to(glow, { scale: 1, duration: 0.9, ease: 'power2.out' }, 'impact')
+        .to(one('.s-fill'), { attr: { 'fill-opacity': 0.09 }, duration: 0.5, ease: 'power2.out' }, 'impact')
+        .set(glint, { attr: { 'stroke-dashoffset': 0, opacity: 1 } }, 'impact+=0.08')
+        .to(glint, { attr: { 'stroke-dashoffset': -1 }, duration: 1.0, ease: 'power2.inOut' }, 'impact+=0.08')
+        .to(glint, { attr: { opacity: 0 }, duration: 0.25 }, 'impact+=0.85')
+        .fromTo(motto, { y: 10 }, { y: 0, opacity: 1, duration: 0.6, ease: 'power3.out', immediateRender: false }, 'impact+=0.12');
+
+      /* IV — the doors part and the seal settles into the hero */
+      tl.addLabel('exit', 'stamp+=1.02')
+        .to([motto, glow], { opacity: 0, duration: 0.35, ease: 'power1.in' }, 'exit')
+        .set(seam, { scaleY: 0 }, 'exit')
+        .to(seam, { scaleY: 1, opacity: 1, duration: 0.3, ease: 'power2.out' }, 'exit')
+        .to(one('.intro__door--l'), { xPercent: -101, duration: 1.2, ease: 'expo.inOut' }, 'exit+=0.2')
+        .to(one('.intro__door--r'), { xPercent: 101, duration: 1.2, ease: 'expo.inOut' }, 'exit+=0.2')
+        .to(seam, { opacity: 0, duration: 0.3 }, 'exit+=0.42')
+        .to(seal, {
+          x: () => flight().x, y: () => flight().y, scale: () => flight().scale,
+          duration: 1.15, ease: 'power3.inOut',
+        }, 'exit+=0.2')
+        // On the hero seal it crossfades into its twin as it lands; on the nav
+        // logo it simply fades as it arrives.
+        .call(() => { if (flight().hero) heroSeal.land(0.45); }, null, 'exit+=1.2')
+        .to(seal, { autoAlpha: 0, duration: 0.45, ease: 'power1.inOut' }, 'exit+=1.2')
+        .call(() => {
+          revealHeroStatic();
+          gsap.fromTo('.hero__actions', { y: 30, opacity: 0 },
+            { y: 0, opacity: 1, duration: 1, ease: 'power3.out', delay: 0.35 });
+        }, null, 'exit+=0.5');
+
+      builtAt = performance.now();
+      if (skipped) { tl.seek('exit'); syncBeam(); }
+    };
+
+    // Start once the serif is in, so the first card doesn't swap faces mid-rise.
+    const fonts = document.fonts?.ready || Promise.resolve();
+    Promise.race([fonts, new Promise((r) => setTimeout(r, 900))]).then(build);
+
+    // Absolute deadline, well past the sequence (a hidden tab pauses the timeline).
+    setTimeout(complete, 14000);
   }
 
   function moveSoundToggle() {
@@ -647,6 +1064,7 @@
     initMagnetic();
     initNav();
     initAudio();
+    heroSeal = initHeroSeal();   // before the intro, which lands its seal on this one
     initIntro();
 
     // Section modules

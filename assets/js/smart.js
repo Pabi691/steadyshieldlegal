@@ -170,17 +170,16 @@
   })();
 
   /* ==========================================================================
-     THEME — three modes, cycled in one control:
+     THEME — two modes, swapped in one control:
        dark      · midnight ground, WebGL stage running
        daylight  · paper ground, WebGL stage running (retuned for light)
-       reading   · paper ground, stage stood down for a calm, fast read
 
      data-mode carries the mode; data-theme keeps carrying only the palette
      (dark | light) so every selector written against it still applies.
      ====================================================================== */
   const theme = (() => {
     const KEY = 'mode';
-    const ORDER = ['dark', 'daylight', 'reading'];
+    const ORDER = ['dark', 'daylight'];
     const meta = () => $('meta[name="theme-color"]');
 
     const MODES = {
@@ -191,13 +190,8 @@
       },
       daylight: {
         palette: 'light', themeColor: '#f3f0e9',
-        next: 'reading', nextLabel: 'Switch to light reading mode',
-        toast: 'Daylight mode on — paper ground, cinematic layer still running.',
-      },
-      reading: {
-        palette: 'light', themeColor: '#f3f0e9',
         next: 'dark', nextLabel: 'Switch to cinematic dark mode',
-        toast: 'Reading mode on — lighter palette, cinematic layer paused.',
+        toast: 'Daylight mode on — paper ground, cinematic layer still running.',
       },
     };
 
@@ -239,6 +233,9 @@
     function toggle() { set(MODES[current()].next); }
 
     function init() {
+      // The retired reading mode is read back as daylight in <head>; replace
+      // the stored value too so nothing else ever sees it.
+      if (store.get(KEY) === 'reading') store.set(KEY, 'daylight');
       apply(current(), false);
       $$('[data-theme-toggle]').forEach((b) => on(b, 'click', () => toggle()));
     }
@@ -451,8 +448,6 @@
           run: () => theme.set('dark') },
         { group: 'Actions', type: 'action', label: 'Daylight mode', meta: 'Light ground, WebGL stage running',
           run: () => theme.set('daylight') },
-        { group: 'Actions', type: 'action', label: 'Reading mode', meta: 'Light ground, stage paused',
-          run: () => theme.set('reading') },
         { group: 'Actions', type: 'action', label: 'Copy email address', meta: 'hello@steadyshieldlegal.com',
           run: () => copy('hello@steadyshieldlegal.com', 'Email address copied.') },
         { group: 'Actions', type: 'action', label: 'Call the office', meta: '+00 000 000 0000',
@@ -1656,12 +1651,18 @@
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
         e.target.classList.add('is-in');
-        io.unobserve(e.target);
+        if (!('ioReplay' in e.target.dataset)) io.unobserve(e.target);
       });
     }, { rootMargin: '0px 0px -10% 0px', threshold: 0.08 });
+    // `data-io-replay` pieces reset once they are fully off screen, so their
+    // CSS animations run again on every pass instead of only the first.
+    const out = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (!e.isIntersecting) e.target.classList.remove('is-in'); });
+    }, { threshold: 0 });
     els.forEach((el) => {
       if (el.dataset.io) el.style.setProperty('--io-delay', el.dataset.io);
       io.observe(el);
+      if ('ioReplay' in el.dataset) out.observe(el);
     });
   }
 
