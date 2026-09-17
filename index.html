@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="color-scheme" content="light dark" />
-  <meta name="theme-color" content="#f3f0e9" />
+  <meta name="theme-color" content="#f2f5fa" />
   <meta name="robots" content="noindex, nofollow" />
 
   <!-- Mode resolved before first paint so daylight never flashes dark.
@@ -245,11 +245,11 @@
           <path class="s-line s-base" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M187 262h26l7 7h-40z"/>
           <g class="s-pan">
             <path class="s-line s-string" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M156 166L143 198M156 166L169 198"/>
-            <path class="s-line s-brass s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M143 198q13 10 26 0"/>
+            <path class="s-line s-accent s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M143 198q13 10 26 0"/>
           </g>
           <g class="s-pan">
             <path class="s-line s-string" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M244 166L231 198M244 166L257 198"/>
-            <path class="s-line s-brass s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M231 198q13 10 26 0"/>
+            <path class="s-line s-accent s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M231 198q13 10 26 0"/>
           </g>
           <g class="s-beam">
             <path class="s-line s-bar" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" d="M156 164H244"/>
@@ -474,11 +474,11 @@
                   <path class="s-line s-base" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M187 262h26l7 7h-40z"/>
                   <g class="s-pan">
                     <path class="s-line s-string" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M156 166L143 198M156 166L169 198"/>
-                    <path class="s-line s-brass s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M143 198q13 10 26 0"/>
+                    <path class="s-line s-accent s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M143 198q13 10 26 0"/>
                   </g>
                   <g class="s-pan">
                     <path class="s-line s-string" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M244 166L231 198M244 166L257 198"/>
-                    <path class="s-line s-brass s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M231 198q13 10 26 0"/>
+                    <path class="s-line s-accent s-dish" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M231 198q13 10 26 0"/>
                   </g>
                   <g class="s-beam">
                     <path class="s-line s-bar" pathLength="1" stroke-dasharray="1" stroke-dashoffset="0" d="M156 164H244"/>
@@ -507,6 +507,106 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- INSIDE THE CHAMBERS — a slow reel of the office               -->
+    <!-- ============================================================= -->
+    <!-- One set of photographs is in the markup; initReel() in main.js adds a
+         hidden second set so the strip can loop without a seam. Without script
+         (or with reduced motion) the strip simply scrolls sideways. -->
+    <section class="reel" id="chambers" aria-labelledby="reel-title" data-cmdk-section="Chambers" data-cmdk-meta="Photographs of the office and team">
+      <div class="wrap reel__head">
+        <div>
+          <p class="section-index">Inside the chambers</p>
+          <h2 class="reel__title display reveal-lines" id="reel-title">Real people, a real office — <em>behind every matter.</em></h2>
+        </div>
+        <p class="reel__note">Hover a photograph to see it in full colour.</p>
+      </div>
+      <div class="reel__viewport" data-io>
+        <ul class="reel__track">
+          <li class="reel__item reel__item--wide">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-corridor.webp" />
+                <img src="assets/img/office/reel-corridor.jpg" width="800" height="600" loading="lazy" decoding="async"
+                     alt="The corridor to the Directors' office and the marketing, legal and customer care room, each door marked with the Steadyshield seal." />
+              </picture>
+              <figcaption class="photo__cap">Directors &amp; client care</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--tall">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-desk.webp" />
+                <img src="assets/img/office/reel-desk.jpg" width="450" height="600" loading="lazy" decoding="async"
+                     alt="Three members of the client care team working at their desks." />
+              </picture>
+              <figcaption class="photo__cap">Client care desk</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--wide">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-floor.webp" />
+                <img src="assets/img/office/reel-floor.jpg" width="800" height="600" loading="lazy" decoding="async"
+                     alt="The main office floor, with staff at their desks and matter files stacked beside them." />
+              </picture>
+              <figcaption class="photo__cap">The main floor</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--tall">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-directors.webp" />
+                <img src="assets/img/office/reel-directors.jpg" width="450" height="600" loading="lazy" decoding="async"
+                     alt="The door to the Directors' office, carrying the Steadyshield Legal LLP seal." />
+              </picture>
+              <figcaption class="photo__cap">Directors' office</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--wide">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-care.webp" />
+                <img src="assets/img/office/reel-care.jpg" width="800" height="600" loading="lazy" decoding="async"
+                     alt="The client care team at a shared workstation, one member on a call." />
+              </picture>
+              <figcaption class="photo__cap">Client care team</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--tall">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-arch.webp" />
+                <img src="assets/img/office/reel-arch.jpg" width="450" height="600" loading="lazy" decoding="async"
+                     alt="A view through the office archway to staff working through matter files." />
+              </picture>
+              <figcaption class="photo__cap">Matters in progress</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--wide">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-files.webp" />
+                <img src="assets/img/office/reel-files.jpg" width="800" height="600" loading="lazy" decoding="async"
+                     alt="Staff reviewing documents at the long desk on the main floor." />
+              </picture>
+              <figcaption class="photo__cap">Working the files</figcaption>
+            </figure>
+          </li>
+          <li class="reel__item reel__item--tall">
+            <figure class="photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/reel-calls.webp" />
+                <img src="assets/img/office/reel-calls.jpg" width="450" height="600" loading="lazy" decoding="async"
+                     alt="A member of the client care team on the phone at her workstation." />
+              </picture>
+              <figcaption class="photo__cap">On the phones</figcaption>
+            </figure>
+          </li>
+        </ul>
       </div>
     </section>
 
@@ -596,7 +696,7 @@
               <path class="mo-draw ashield__arm" pathLength="1" style="--d:1.25s;--dur:.9s"
                     d="M72 146.62C72 210.75 108 244.5 150 258C192 244.5 228 210.75 228 146.62"/>
 
-              <!-- brass where the strokes meet -->
+              <!-- blue where the strokes meet -->
               <circle class="mo-fade ashield__node" cx="150" cy="42" r="3.4" style="--d:1.75s"/>
               <circle class="mo-fade ashield__node" cx="72" cy="146.62" r="3.4" style="--d:1.85s"/>
               <circle class="mo-fade ashield__node" cx="228" cy="146.62" r="3.4" style="--d:1.95s"/>
@@ -630,6 +730,26 @@
           <div class="about__chain" aria-hidden="true" data-io>
             <span>Knowledge</span><i></i><span>Strategy</span><i></i><span>Protection</span>
           </div>
+
+          <!-- Two photographs, layered: the team, and the door enquiries come
+               through. They drift apart slightly on scroll (initPhotoParallax). -->
+          <div class="about__photos" data-io>
+            <figure class="about__photo about__photo--main photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/about-team.webp" />
+                <img src="assets/img/office/about-team.jpg" width="960" height="1200" loading="lazy" decoding="async"
+                     alt="The client care team working together at their shared desk." />
+              </picture>
+            </figure>
+            <figure class="about__photo about__photo--inset photo">
+              <picture>
+                <source type="image/webp" srcset="assets/img/office/about-door.webp" />
+                <img src="assets/img/office/about-door.jpg" width="640" height="640" loading="lazy" decoding="async"
+                     alt="The Marketing &amp; Legal and Customer Care door, marked with the Steadyshield Legal LLP seal." />
+              </picture>
+            </figure>
+          </div>
+          <p class="about__photos-note">Our client care team at work — and the door every enquiry comes through.</p>
         </div>
       </div>
     </section>
@@ -894,7 +1014,7 @@
         </div>
         <div class="shots" data-io>
           <figure class="shots__item">
-            <picture>
+            <picture class="photo">
               <source type="image/webp" srcset="assets/img/office/entrance-w700.webp 700w, assets/img/office/entrance-w1400.webp 1400w" sizes="(max-width: 860px) 92vw, 30vw" />
               <img src="assets/img/office/entrance-w700.jpg"
                    srcset="assets/img/office/entrance-w700.jpg 700w, assets/img/office/entrance-w1400.jpg 1400w"
@@ -904,7 +1024,7 @@
             <figcaption>The chambers</figcaption>
           </figure>
           <figure class="shots__item">
-            <picture>
+            <picture class="photo">
               <source type="image/webp" srcset="assets/img/office/room-w700.webp 700w, assets/img/office/room-w1400.webp 1400w" sizes="(max-width: 860px) 92vw, 30vw" />
               <img src="assets/img/office/room-w700.jpg"
                    srcset="assets/img/office/room-w700.jpg 700w, assets/img/office/room-w1400.jpg 1400w"
@@ -914,7 +1034,7 @@
             <figcaption>The floor</figcaption>
           </figure>
           <figure class="shots__item">
-            <picture>
+            <picture class="photo">
               <source type="image/webp" srcset="assets/img/office/team-w700.webp 700w, assets/img/office/team-w1400.webp 1400w" sizes="(max-width: 860px) 92vw, 30vw" />
               <img src="assets/img/office/team-w700.jpg"
                    srcset="assets/img/office/team-w700.jpg 700w, assets/img/office/team-w1400.jpg 1400w"

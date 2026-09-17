@@ -3,6 +3,12 @@
 > Justice. Precision. Protection.
 
 A production-ready, cinematic single-page site for a fictional premium law brand.
+The palette is drawn from the logo's navy (`--logo: #052651`): a midnight-navy
+ground in dark mode, a cool paper ground with navy ink in daylight, and one lifted
+blue of the same hue as the accent (`--accent` / `--accent-rgb`). Office
+photographs (`assets/img/office/`, cut from the originals in
+`assets/img/steadyshield/`) are toned into that blue with the shared `.photo`
+class and return to full colour on hover.
 Dark editorial design system, two cinematic intros — a drawn seal (title cards →
 seal drawn and struck → doors part, seal lands in the hero) for daylight and
 devices without WebGL, and a WebGL courtroom (gavel strike → particle shield) for

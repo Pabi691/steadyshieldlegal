@@ -88,10 +88,10 @@ if (!SS.useWebGL) {
     renderer.toneMappingExposure = 0.9;
 
     const scene = new THREE.Scene();
-    // Warm near-black, not pure black: the room has to read as an interior,
+    // Midnight navy, not pure black: the room has to read as an interior,
     // otherwise the dust motes turn into a starfield.
-    scene.background = new THREE.Color(0x0a0704);
-    scene.fog = new THREE.FogExp2(0x0a0704, 0.042);
+    scene.background = new THREE.Color(0x030a17);
+    scene.fog = new THREE.FogExp2(0x030a17, 0.042);
 
     const pmrem = new THREE.PMREMGenerator(renderer);
     scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
@@ -101,15 +101,15 @@ if (!SS.useWebGL) {
     camera.lookAt(0, 0.7, 0);
 
     /* --- lights --- */
-    scene.add(new THREE.AmbientLight(0x2a1d12, 0.35));
+    scene.add(new THREE.AmbientLight(0x13223d, 0.4));
     const rim = new THREE.DirectionalLight(0x6f83a8, 0.32);   // cool counter-light
     rim.position.set(-7, 5, -4);
     scene.add(rim);
-    const bounce = new THREE.PointLight(0x8a5a2c, 3.2, 14, 2); // warm bench bounce
+    const bounce = new THREE.PointLight(0x2c5aa0, 3.2, 14, 2); // blue bench bounce
     bounce.position.set(0, -0.1, 1.6);
     scene.add(bounce);
 
-    const beam = new THREE.SpotLight(0xffe0b0, 0, 42, 0.46, 0.62, 1.2);
+    const beam = new THREE.SpotLight(0xdce8ff, 0, 42, 0.46, 0.62, 1.2);
     beam.position.set(1.6, 9.5, 3.2);
     beam.target.position.set(0, -0.2, 0.2);
     beam.castShadow = QUALITY === 'high';
@@ -119,7 +119,7 @@ if (!SS.useWebGL) {
 
     /* --- visible light shaft: the single strongest courtroom cue --- */
     const shaftMat = new THREE.MeshBasicMaterial({
-      color: 0xffdca8, transparent: true, opacity: 0, depthWrite: false,
+      color: 0xcfe0ff, transparent: true, opacity: 0, depthWrite: false,
       blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     const shaft = new THREE.Mesh(new THREE.ConeGeometry(3.1, 10.6, 40, 1, true), shaftMat);
@@ -137,10 +137,11 @@ if (!SS.useWebGL) {
       return m;
     };
 
-    const wallMat  = mkWood(0x1a1009, 0.72);
-    const panelMat = mkWood(0x241609, 0.6);
-    const wood     = mkWood(0x2b1a0e, 0.5);
-    const blockMat = mkWood(0x3a2412, 0.42);
+    // Navy-lacquered panelling — the logo's blue, deepened for a dark room.
+    const wallMat  = mkWood(0x07142b, 0.72);
+    const panelMat = mkWood(0x0a1c3a, 0.6);
+    const wood     = mkWood(0x0d2246, 0.5);
+    const blockMat = mkWood(0x12305e, 0.42);
 
     const wall = new THREE.Mesh(new THREE.PlaneGeometry(34, 18), wallMat);
     wall.position.set(0, 4.5, -7.5);
@@ -171,7 +172,7 @@ if (!SS.useWebGL) {
     benchFace.position.set(0, -2.4, 4.4);
     scene.add(benchFace);
 
-    const benchLip = new THREE.Mesh(new THREE.BoxGeometry(24, 0.22, 0.5), mkWood(0x3d2614, 0.42));
+    const benchLip = new THREE.Mesh(new THREE.BoxGeometry(24, 0.22, 0.5), mkWood(0x163a6e, 0.42));
     benchLip.position.set(0, -0.55, 4.45);
     scene.add(benchLip);
 
@@ -182,13 +183,13 @@ if (!SS.useWebGL) {
     scene.add(block);
 
     const blockInlay = new THREE.Mesh(new THREE.CylinderGeometry(0.78, 0.78, 0.44, 44),
-      mkWood(0x4a301a, 0.36));
+      mkWood(0x1a4380, 0.36));
     blockInlay.position.copy(block.position);
     scene.add(blockInlay);
 
     /* --- impact shockwave ring (hidden until the strike) --- */
     const ringMat = new THREE.MeshBasicMaterial({
-      color: 0xffd9a0, transparent: true, opacity: 0, depthWrite: false,
+      color: 0xbcd4ff, transparent: true, opacity: 0, depthWrite: false,
       blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     const shock = new THREE.Mesh(new THREE.RingGeometry(0.9, 1.05, 48), ringMat);
@@ -196,16 +197,16 @@ if (!SS.useWebGL) {
     shock.position.set(0, -0.01, 0.2);
     scene.add(shock);
 
-    /* --- gavel: turned walnut, brass bands, handle rising to the wrist ---
+    /* --- gavel: turned navy lacquer, silver bands, handle rising to the wrist ---
        Lathe profiles rather than a capsule: a capsule reads as a bullet, a
        chamfered barrel reads as a turned wooden head. */
     const HANDLE = 2.35;                       // head centre -> wrist
     const gavel = new THREE.Group();
 
-    const gavelWood = new THREE.MeshStandardMaterial({ color: 0x6b3f1f, roughness: 0.42, metalness: 0.0 });
-    gavelWood.envMapIntensity = 0.3;
-    const brass = new THREE.MeshStandardMaterial({ color: 0xb08a4a, roughness: 0.32, metalness: 0.85 });
-    brass.envMapIntensity = 0.7;
+    const gavelWood = new THREE.MeshStandardMaterial({ color: 0x1c3f78, roughness: 0.38, metalness: 0.05 });
+    gavelWood.envMapIntensity = 0.35;
+    const silver = new THREE.MeshStandardMaterial({ color: 0xc3cfe0, roughness: 0.28, metalness: 0.9 });
+    silver.envMapIntensity = 0.8;
 
     const lathe = (pts, seg) => new THREE.LatheGeometry(
       pts.map(([x, y]) => new THREE.Vector2(x, y)), seg || 32);
@@ -220,7 +221,7 @@ if (!SS.useWebGL) {
     gavel.add(head);
 
     [-0.74, 0.74].forEach((x) => {
-      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.455, 0.455, 0.13, 32), brass);
+      const band = new THREE.Mesh(new THREE.CylinderGeometry(0.455, 0.455, 0.13, 32), silver);
       band.rotation.z = Math.PI / 2;
       band.position.x = x;
       band.castShadow = true;
@@ -236,7 +237,7 @@ if (!SS.useWebGL) {
     handle.castShadow = true;
     gavel.add(handle);
 
-    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.09, 28), brass);
+    const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.21, 0.21, 0.09, 28), silver);
     collar.position.y = 0.2;
     gavel.add(collar);
 
@@ -263,9 +264,9 @@ if (!SS.useWebGL) {
       c.width = c.height = 32;
       const ctx = c.getContext('2d');
       const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-      g.addColorStop(0.0, 'rgba(255,248,232,1)');
-      g.addColorStop(0.35, 'rgba(255,244,220,0.42)');
-      g.addColorStop(1.0, 'rgba(255,240,210,0)');
+      g.addColorStop(0.0, 'rgba(236,244,255,1)');
+      g.addColorStop(0.35, 'rgba(220,234,255,0.42)');
+      g.addColorStop(1.0, 'rgba(210,228,255,0)');
       ctx.fillStyle = g;
       ctx.fillRect(0, 0, 32, 32);
       return new THREE.CanvasTexture(c);
@@ -274,7 +275,7 @@ if (!SS.useWebGL) {
     const dustGeo = new THREE.BufferGeometry();
     dustGeo.setAttribute('position', new THREE.BufferAttribute(dpos, 3));
     const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({
-      map: dustTex, color: 0xd9c09a, size: 0.075, transparent: true, opacity: 0,
+      map: dustTex, color: 0xbcd0f0, size: 0.075, transparent: true, opacity: 0,
       depthWrite: false, sizeAttenuation: true,
     }));
     scene.add(dust);
@@ -291,7 +292,7 @@ if (!SS.useWebGL) {
     const formGeo = new THREE.BufferGeometry();
     formGeo.setAttribute('position', new THREE.BufferAttribute(scatter.slice(), 3));
     const form = new THREE.Points(formGeo, new THREE.PointsMaterial({
-      color: 0xc9ced8, size: 0.02, transparent: true, opacity: 0, depthWrite: false,
+      color: 0xc6d7f2, size: 0.02, transparent: true, opacity: 0, depthWrite: false,
       blending: THREE.AdditiveBlending,
     }));
     form.position.z = 2.5;
@@ -455,10 +456,10 @@ if (!SS.useWebGL) {
     key.position.set(5, 7, 6); scene.add(key);
     const fill = new THREE.DirectionalLight(0x2f4f82, 1.0);
     fill.position.set(-6, -2, 3); scene.add(fill);
-    const rimBack = new THREE.DirectionalLight(0xc9ced8, 1.6);
+    const rimBack = new THREE.DirectionalLight(0xaec4e8, 1.6);
     rimBack.position.set(-4, 3, -7); scene.add(rimBack);
-    const warm = new THREE.PointLight(0xd9c9ac, 20, 32);
-    warm.position.set(-3, 2, 4); scene.add(warm);
+    const glow = new THREE.PointLight(0x7fa8e8, 20, 32);
+    glow.position.set(-3, 2, 4); scene.add(glow);
 
     /* --- master group holds every shield state --- */
     // The hero has no 3D shield: its emblem is the drawn seal in the page
@@ -474,7 +475,7 @@ if (!SS.useWebGL) {
         depth: 0.05, bevelEnabled: true, bevelThickness: 0.03, bevelSize: 0.03, bevelSegments: 2, curveSegments: 32,
       });
       g.center();
-      const m = metal({ color: i % 2 ? 0x1a2536 : 0x0f1622, roughness: 0.3, transparent: true, opacity: 0 });
+      const m = metal({ color: i % 2 ? 0x163060 : 0x0b1f42, roughness: 0.3, transparent: true, opacity: 0 });
       const mesh = new THREE.Mesh(g, m);
       mesh.userData.rest = { z: -i * 0.16, rx: 0, ry: 0 };
       mesh.userData.scatter = {
@@ -491,7 +492,7 @@ if (!SS.useWebGL) {
         depth: 0.03, bevelEnabled: false, curveSegments: 40,
       });
       g.center();
-      const m = metal({ color: 0x141d2b, roughness: 0.28, transparent: true, opacity: 0, side: THREE.DoubleSide });
+      const m = metal({ color: 0x0f2548, roughness: 0.28, transparent: true, opacity: 0, side: THREE.DoubleSide });
       const mesh = new THREE.Mesh(g, m);
       mesh.visible = false;
       rings.push(mesh); rig.add(mesh);
@@ -510,7 +511,7 @@ if (!SS.useWebGL) {
     const haloGeo = new THREE.BufferGeometry();
     haloGeo.setAttribute('position', new THREE.BufferAttribute(hp, 3));
     const haloPts = new THREE.Points(haloGeo, new THREE.PointsMaterial({
-      color: 0x8b93a3, size: 0.018, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending,
+      color: 0x8fa6cc, size: 0.018, transparent: true, opacity: 0.5, depthWrite: false, blending: THREE.AdditiveBlending,
     }));
     scene.add(haloPts);
 
@@ -526,28 +527,28 @@ if (!SS.useWebGL) {
         amb:  { c: 0x24304a, i: 0.55 },
         key:  { c: 0xe7edf7, i: 2.4 },
         fill: { c: 0x2f4f82, i: 1.0 },
-        rim:  { c: 0xc9ced8, i: 1.6 },
-        warm: { c: 0xd9c9ac, i: 20 },
+        rim:  { c: 0xaec4e8, i: 1.6 },
+        glow: { c: 0x7fa8e8, i: 20 },
         metalness: 1,
-        layer:  { odd: 0x1a2536, even: 0x0f1622 },
-        ring:   0x141d2b,
-        halo:   { c: 0x8b93a3, size: 0.018, blend: THREE.AdditiveBlending, base: 0.14, gain: 0.36 },
+        layer:  { odd: 0x163060, even: 0x0b1f42 },
+        ring:   0x0f2548,
+        halo:   { c: 0x8fa6cc, size: 0.018, blend: THREE.AdditiveBlending, base: 0.14, gain: 0.36 },
       },
       light: {
         exposure: 1.06,
-        amb:  { c: 0xf0e4d4, i: 0.6 },   // warm bounce, as if off panelled walls
-        key:  { c: 0xfff6ea, i: 1.95 },
-        fill: { c: 0xa8b8d4, i: 0.8 },   // one cool note keeps the walnut rich
-        rim:  { c: 0xb08a4a, i: 1.1 },   // brass counter-rim
-        warm: { c: 0xffe6c4, i: 8 },     // kept low or the bevel blows to orange
-        // Walnut, the wood the intro's gavel is cut from. A full metal is lit
-        // almost entirely by the environment, so a dark base would collapse to
-        // a flat cut-out on paper; a low metalness keeps it lacquered wood and
-        // lets the key and fill sculpt the faces into a real gradient.
+        amb:  { c: 0xe4ecf8, i: 0.6 },   // cool bounce, as if off pale walls
+        key:  { c: 0xf6f9ff, i: 1.95 },
+        fill: { c: 0xa8b8d4, i: 0.8 },
+        rim:  { c: 0x2c5aa0, i: 1.1 },   // blue counter-rim
+        glow: { c: 0xcfe0ff, i: 8 },     // kept low or the bevel washes out
+        // The logo's navy as a lacquer. A full metal is lit almost entirely by
+        // the environment, so a dark base would collapse to a flat cut-out on
+        // paper; a low metalness keeps it enamel and lets the key and fill
+        // sculpt the faces into a real gradient.
         metalness: 0.35,
-        layer:  { odd: 0x7a4a26, even: 0x55321a },
-        ring:   0x6b4423,
-        halo:   { c: 0x7a6248, size: 0.02, blend: THREE.NormalBlending, base: 0.1, gain: 0.26 },
+        layer:  { odd: 0x1c3f78, even: 0x052651 },
+        ring:   0x0b2d5c,
+        halo:   { c: 0x4a6592, size: 0.02, blend: THREE.NormalBlending, base: 0.1, gain: 0.26 },
       },
     };
 
@@ -562,7 +563,7 @@ if (!SS.useWebGL) {
       key.color.setHex(p.key.c);      key.intensity = p.key.i;
       fill.color.setHex(p.fill.c);    fill.intensity = p.fill.i;
       rimBack.color.setHex(p.rim.c);  rimBack.intensity = p.rim.i;
-      warm.color.setHex(p.warm.c);    warm.intensity = p.warm.i;
+      glow.color.setHex(p.glow.c);    glow.intensity = p.glow.i;
 
       layers.forEach((m, i) => {
         m.material.color.setHex(i % 2 ? p.layer.odd : p.layer.even);
@@ -640,7 +641,7 @@ if (!SS.useWebGL) {
       camera.position.x = lerp(camera.position.x, pointer.x * 0.6, 0.06);
       camera.position.y = lerp(camera.position.y, -pointer.y * 0.4, 0.06);
       camera.lookAt(0, 0, 0);
-      warm.position.x = lerp(warm.position.x, -3 + pointer.x * 2, 0.05);
+      glow.position.x = lerp(glow.position.x, -3 + pointer.x * 2, 0.05);
 
       // ---- APPROACH (assemble) ----
       layers.forEach((m, i) => {

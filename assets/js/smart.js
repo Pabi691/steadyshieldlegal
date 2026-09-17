@@ -184,12 +184,12 @@
 
     const MODES = {
       dark: {
-        palette: 'dark', themeColor: '#0a0c10',
+        palette: 'dark', themeColor: '#030c1b',
         next: 'daylight', nextLabel: 'Switch to daylight cinematic mode',
         toast: 'Cinematic mode on — full dark stage restored.',
       },
       daylight: {
-        palette: 'light', themeColor: '#f3f0e9',
+        palette: 'light', themeColor: '#f2f5fa',
         next: 'dark', nextLabel: 'Switch to cinematic dark mode',
         toast: 'Daylight mode on — paper ground, cinematic layer still running.',
       },

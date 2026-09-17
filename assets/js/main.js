@@ -314,6 +314,34 @@
     });
   }
 
+  /* ---------------------------------------------------------------- Chambers reel */
+  // The page holds one set of photographs. A second set, hidden from assistive
+  // tech, makes the strip loop without a seam: the track slides exactly half
+  // its width (CSS), then starts over. Reduced motion keeps the scrollable strip.
+  function initReel() {
+    const track = document.querySelector('.reel__track');
+    if (!track || prefersReduced) return;
+    Array.from(track.children).forEach((item) => {
+      const copy = item.cloneNode(true);
+      copy.setAttribute('aria-hidden', 'true');
+      copy.querySelectorAll('img').forEach((img) => { img.alt = ''; });
+      track.appendChild(copy);
+    });
+    track.closest('.reel').classList.add('is-looping');
+  }
+
+  /* ---------------------------------------------------------------- Photo parallax */
+  // About's two photographs drift apart as they pass: the tall one slower than
+  // the page, the pinned square faster, so they read as two prints, not one.
+  function initPhotoParallax() {
+    if (!hasGSAP || prefersReduced || typeof ScrollTrigger === 'undefined') return;
+    const pair = document.querySelector('.about__photos');
+    if (!pair) return;
+    const scrub = { trigger: pair, start: 'top bottom', end: 'bottom top', scrub: 0.8 };
+    gsap.fromTo(pair.querySelector('.about__photo--main'), { y: 30 }, { y: -30, ease: 'none', scrollTrigger: scrub });
+    gsap.fromTo(pair.querySelector('.about__photo--inset'), { y: 70 }, { y: -50, ease: 'none', scrollTrigger: { ...scrub } });
+  }
+
   /* ---------------------------------------------------------------- Courtroom pin */
   function initCourtroom() {
     if (!hasGSAP || prefersReduced) return;
@@ -560,7 +588,7 @@
   }
 
   // Undraw: every stroke back to a dash offset that hides it (the inner ring
-  // draws the other way round), every brass node to nothing, the fill clear.
+  // draws the other way round), every accent node to nothing, the fill clear.
   function primeSeal(root) {
     root.querySelectorAll('[stroke-dasharray="1"]').forEach((el) =>
       el.setAttribute('stroke-dashoffset', el.classList.contains('s-ring-in') ? -1 : 1));
@@ -607,7 +635,7 @@
      Enters one of two ways — the intro's seal lands on it (land), or it draws
      itself in (enter) — then lives: bezels turning against each other, light
      breathing, dust rising, and every ten seconds a tap on the scales, a
-     ripple off the rim and a brass glint round it. Turns in 3D with the
+     ripple off the rim and a glint of light round it. Turns in 3D with the
      pointer (a slow drift on touch), and tilts away as the hero scrolls off. */
   let heroSeal = null;
 
@@ -857,12 +885,12 @@
   }
 
   /* ---------------------------------------------------------------- Seal intro
-     I.   A point of brass stretches into a rule; the firm's three words rise off
+     I.   A point of light stretches into a rule; the firm's three words rise off
           it one at a time, each with its index dropping beneath.
      II.  The rule collapses back to the point and the seal is drawn out of it —
           rim, shield, the scales tipping as they're drawn and swinging level,
           the legend engraved around the rim in one sweep.
-     III. The seal is struck: a press, a shockwave, a brass glint round the rim.
+     III. The seal is struck: a press, a shockwave, a glint round the rim.
      IV.  The ground parts at the centre like a pair of doors, and the seal flies
           across onto the hero's seal — the same drawing — and becomes it. */
   function runSealIntro(skip) {
@@ -1070,6 +1098,8 @@
     // Section modules
     initReveals();
     initParallax();
+    initReel();
+    initPhotoParallax();
     initPanels();
     initDocs();
     initDocsCollate();

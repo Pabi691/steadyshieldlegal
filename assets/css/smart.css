@@ -145,10 +145,10 @@ html:not([data-mode]) .theme-switch .ico-sun { transform: translateY(0) rotate(0
   border: 1px solid var(--line); border-radius: 8px; color: var(--silver-dim);
 }
 .cmdk__ico svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.5; }
-.cmdk__item[aria-selected="true"] .cmdk__ico { color: var(--champagne); border-color: var(--champagne); }
+.cmdk__item[aria-selected="true"] .cmdk__ico { color: var(--accent); border-color: var(--accent); }
 .cmdk__body { min-width: 0; flex: 1; }
 .cmdk__label { display: block; font-size: var(--step-0); }
-.cmdk__label mark { background: none; color: var(--champagne); font-weight: 600; }
+.cmdk__label mark { background: none; color: var(--accent); font-weight: 600; }
 .cmdk__meta {
   display: block; font-size: 0.72rem; color: var(--silver-dim);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -182,7 +182,7 @@ html:not([data-mode]) .theme-switch .ico-sun { transform: translateY(0) rotate(0
   transition: width 0.4s var(--ease), background 0.4s var(--ease), opacity 0.3s;
 }
 .rail__dot:hover::before { width: 24px; opacity: 1; }
-.rail__dot[aria-current="true"]::before { width: 26px; background: var(--champagne); opacity: 1; }
+.rail__dot[aria-current="true"]::before { width: 26px; background: var(--accent); opacity: 1; }
 .rail__tip {
   position: absolute; right: calc(100% + 4px); top: 50%;
   padding: 5px 11px; border-radius: 6px; white-space: nowrap;
@@ -226,7 +226,7 @@ html:not([data-mode]) .theme-switch .ico-sun { transform: translateY(0) rotate(0
 .dock__ring circle { fill: none; stroke-width: 1.5; }
 .dock__ring .track { stroke: var(--line); }
 .dock__ring .fill {
-  stroke: var(--champagne); stroke-linecap: round;
+  stroke: var(--accent); stroke-linecap: round;
   stroke-dasharray: 157; stroke-dashoffset: 157;
   transition: stroke-dashoffset 0.15s linear;
 }
@@ -297,16 +297,16 @@ html:not([data-mode]) .theme-switch .ico-sun { transform: translateY(0) rotate(0
 .panel__open {
   grid-column: 2 / 3; display: inline-flex; align-items: center; gap: 8px;
   font-size: var(--step--1); letter-spacing: 0.14em; text-transform: uppercase;
-  color: var(--champagne); max-height: 0; opacity: 0; overflow: hidden;
+  color: var(--accent); max-height: 0; opacity: 0; overflow: hidden;
   transition: max-height 0.5s var(--ease), opacity 0.4s var(--ease), margin 0.4s var(--ease);
 }
 .panel:hover .panel__open, .panel:focus-visible .panel__open, .panel.is-open .panel__open {
   max-height: 3em; opacity: 1; margin-top: 18px;
 }
 .panel__open svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; }
-.panel mark, .card mark { background: rgba(217, 201, 172, 0.24); color: inherit; border-radius: 2px; }
+.panel mark, .card mark { background: rgba(var(--accent-rgb), 0.24); color: inherit; border-radius: 2px; }
 html[data-theme="light"] .panel mark,
-html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
+html[data-theme="light"] .card mark { background: rgba(var(--accent-rgb), 0.16); }
 
 .panels__empty {
   padding: clamp(50px, 9vh, 90px) var(--gutter); text-align: center;
@@ -358,7 +358,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .drawer__list li { position: relative; padding-left: 24px; color: var(--silver); font-weight: 300; }
 .drawer__list li::before {
   content: ""; position: absolute; left: 0; top: 0.62em;
-  width: 10px; height: 1px; background: var(--champagne);
+  width: 10px; height: 1px; background: var(--accent);
 }
 .drawer__foot {
   flex: none; padding: 22px clamp(24px, 4vw, 40px);
@@ -384,7 +384,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .triage__bar { height: 2px; background: var(--line-soft); }
 .triage__bar span {
   display: block; height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--silver), var(--champagne));
+  background: linear-gradient(90deg, var(--silver), var(--accent));
   transition: width 0.6s var(--ease);
 }
 .triage__inner { padding: clamp(28px, 5vw, 56px); }
@@ -401,7 +401,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
   transition: border-color 0.3s var(--ease), color 0.3s var(--ease),
               background 0.3s var(--ease), transform 0.35s var(--spring);
 }
-.triage__opt:hover { border-color: var(--champagne); color: var(--white); background: var(--hover-wash); transform: translateY(-3px); }
+.triage__opt:hover { border-color: var(--accent); color: var(--white); background: var(--hover-wash); transform: translateY(-3px); }
 .triage__opt strong { display: block; font-weight: 500; font-size: var(--step-0); color: var(--platinum); }
 .triage__opt span { display: block; margin-top: 6px; font-size: var(--step--1); color: var(--silver-dim); }
 .triage__opt:hover strong { color: var(--white); }
@@ -420,12 +420,12 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
   padding: 18px 22px; border: 1px solid var(--line); border-radius: 14px;
   color: var(--silver); transition: border-color 0.3s, background 0.3s, transform 0.35s var(--spring);
 }
-.triage__match:hover { border-color: var(--champagne); background: var(--hover-wash); transform: translateX(4px); }
+.triage__match:hover { border-color: var(--accent); background: var(--hover-wash); transform: translateX(4px); }
 .triage__match strong { font-family: var(--serif); font-weight: 400; font-size: var(--step-1); color: var(--white); }
 .triage__match p { font-size: var(--step--1); color: var(--silver-dim); margin-top: 4px; }
 .triage__score {
   margin-left: auto; flex: none; font-size: 0.68rem; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--champagne);
+  text-transform: uppercase; color: var(--accent);
   border: 1px solid var(--line); border-radius: 100px; padding: 5px 12px; white-space: nowrap;
 }
 .triage__actions { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
@@ -461,15 +461,15 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
   transition: opacity 0.4s var(--ease), stroke 0.4s var(--ease);
 }
 .dial__tick.is-lit { opacity: 1; }
-/* the last unit lands in brass — the target reached */
-.dial__tick.is-last.is-lit { stroke: var(--champagne); }
+/* the last unit lands in the accent — the target reached */
+.dial__tick.is-last.is-lit { stroke: var(--accent); }
 .metric__num {
   grid-area: num; align-self: center;
   font-family: var(--serif); font-weight: 400; font-size: var(--step-3);
   color: var(--white); line-height: 1; font-variant-numeric: tabular-nums;
   display: flex; align-items: baseline; gap: 2px;
 }
-.metric__num i { font-style: normal; font-size: 0.5em; color: var(--champagne); }
+.metric__num i { font-style: normal; font-size: 0.5em; color: var(--accent); }
 .metric__label {
   grid-area: label;
   margin-top: 14px; font-size: var(--step--1); letter-spacing: 0.16em;
@@ -491,7 +491,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
   position: relative; overflow: hidden; transition: background 0.3s;
 }
 .quotes__dot:hover { background: var(--silver-dim); }
-.quotes__dot span { position: absolute; inset: 0; width: 0%; background: var(--champagne); }
+.quotes__dot span { position: absolute; inset: 0; width: 0%; background: var(--accent); }
 .quotes__dot[aria-current="true"] span { width: 100%; }
 .quotes__dot[aria-current="true"].is-timing span { animation: quoteFill var(--quote-dur, 7s) linear both; }
 @keyframes quoteFill { from { width: 0%; } to { width: 100%; } }
@@ -520,12 +520,12 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 }
 .card:hover .card__save, .card__save:focus-visible, .card__save[aria-pressed="true"] { opacity: 1; }
 .card__save:hover { color: var(--white); background: var(--hover-wash); transform: scale(1.1); }
-.card__save[aria-pressed="true"] { color: var(--champagne); }
+.card__save[aria-pressed="true"] { color: var(--accent); }
 .card__save svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; }
 .card__save[aria-pressed="true"] svg { fill: currentColor; }
 .card__bar {
   position: absolute; left: 0; top: 0; width: 2px; height: 100%;
-  background: var(--champagne); transform: scaleY(0); transform-origin: top;
+  background: var(--accent); transform: scaleY(0); transform-origin: top;
   transition: transform 0.5s var(--ease);
 }
 .card.is-saved .card__bar { transform: scaleY(1); }
@@ -573,7 +573,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .form__progress-track { flex: 1; height: 2px; background: var(--line); border-radius: 100px; overflow: hidden; }
 .form__progress-track span {
   display: block; height: 100%; width: 0%;
-  background: linear-gradient(90deg, var(--silver), var(--champagne));
+  background: linear-gradient(90deg, var(--silver), var(--accent));
   transition: width 0.5s var(--ease);
 }
 .form__progress-num { font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -593,13 +593,13 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .field__ok {
   position: absolute; right: 3px; top: 36px; width: 15px; height: 15px;
   opacity: 0; transform: scale(0.6); transition: 0.35s var(--spring);
-  fill: none; stroke: var(--champagne); stroke-width: 2.2; pointer-events: none;
+  fill: none; stroke: var(--accent); stroke-width: 2.2; pointer-events: none;
 }
 .field.is-valid .field__ok { opacity: 1; transform: none; }
 
 .matter-hint {
   font-size: var(--step--1); color: var(--silver); background: var(--hover-wash);
-  border-left: 2px solid var(--champagne); padding-inline: 16px; border-radius: 0 8px 8px 0;
+  border-left: 2px solid var(--accent); padding-inline: 16px; border-radius: 0 8px 8px 0;
   max-height: 0; opacity: 0; overflow: hidden; padding-block: 0;
   transition: max-height 0.45s var(--ease), opacity 0.35s, padding 0.4s, margin 0.4s;
 }
@@ -610,7 +610,7 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .consent-field .field__err { padding-left: 24px; }
 
 .draft-note { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: var(--step--1); color: var(--silver-dim); }
-.draft-note button { color: var(--champagne); text-decoration: underline; text-underline-offset: 3px; }
+.draft-note button { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 
 .btn.is-busy { pointer-events: none; opacity: 0.75; }
 .btn.is-busy .btn__spin { display: block; }
@@ -646,10 +646,10 @@ html[data-theme="light"] .card mark { background: rgba(180, 150, 80, 0.26); }
 .toast.is-out { animation: toastOut 0.3s var(--ease) both; }
 @keyframes toastIn { from { opacity: 0; transform: translateY(18px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes toastOut { to { opacity: 0; transform: translateY(10px) scale(0.98); } }
-.toast__ico { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--champagne); stroke-width: 1.7; }
+.toast__ico { flex: none; width: 18px; height: 18px; fill: none; stroke: var(--accent); stroke-width: 1.7; }
 .toast--err .toast__ico { stroke: var(--danger); }
 .toast__txt { flex: 1; }
-.toast__act { flex: none; color: var(--champagne); text-decoration: underline; text-underline-offset: 3px; font-size: 0.76rem; }
+.toast__act { flex: none; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-size: 0.76rem; }
 .toast__x { flex: none; color: var(--silver-dim); line-height: 1; font-size: 1.15rem; }
 .toast__x:hover { color: var(--white); }
 
